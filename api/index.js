@@ -6,31 +6,34 @@ const XLSX = require('xlsx');
 let questionsBySet = null;
 let stats = null;
 
-// 사용자 데이터 파일 경로
-const USERS_FILE = path.join(__dirname, '..', 'users.json');
+// 메모리 기반 사용자 저장소 (Vercel 환경 대응)
+let usersData = { users: {} };
 
-// 사용자 데이터 로드
-function loadUsers() {
-  try {
-    if (fs.existsSync(USERS_FILE)) {
-      const data = fs.readFileSync(USERS_FILE, 'utf8');
-      return JSON.parse(data);
-    }
-  } catch (error) {
-    console.error('사용자 데이터 로드 오류:', error);
+// 테스트용 사용자 미리 생성
+usersData.users['test'] = {
+  password: 'test123',
+  createdAt: new Date().toISOString(),
+  stats: {
+    totalQuestions: 0,
+    correctAnswers: 0,
+    incorrectAnswers: 0,
+    totalStudyTime: 0,
+    lastPracticeDate: null,
+    practiceHistory: [],
+    wrongQuestions: [],
+    lastSequentialPosition: 0
   }
-  return { users: {} };
+};
+
+// 사용자 데이터 로드 (메모리에서)
+function loadUsers() {
+  return usersData;
 }
 
-// 사용자 데이터 저장
-function saveUsers(usersData) {
-  try {
-    fs.writeFileSync(USERS_FILE, JSON.stringify(usersData, null, 2), 'utf8');
-    return true;
-  } catch (error) {
-    console.error('사용자 데이터 저장 오류:', error);
-    return false;
-  }
+// 사용자 데이터 저장 (메모리에)
+function saveUsers(data) {
+  usersData = data;
+  return true;
 }
 
 // 사용자 생성
@@ -550,14 +553,26 @@ module.exports = (req, res) => {
       });
       req.on('end', () => {
         try {
+          console.log('로그인 요청 받음:', body);
           const { username, password } = JSON.parse(body);
+          
+          if (!username || !password) {
+            console.log('사용자명 또는 비밀번호 누락');
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: false, message: '사용자명과 비밀번호를 모두 입력해주세요.' }));
+            return;
+          }
+          
+          console.log('로그인 시도:', username);
           const result = authenticateUser(username, password);
+          console.log('로그인 결과:', result.success ? '성공' : '실패');
           
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify(result));
         } catch (error) {
+          console.error('로그인 오류:', error);
           res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ success: false, message: '잘못된 요청입니다.' }));
+          res.end(JSON.stringify({ success: false, message: '로그인 중 오류가 발생했습니다: ' + error.message }));
         }
       });
     }
@@ -569,14 +584,40 @@ module.exports = (req, res) => {
       });
       req.on('end', () => {
         try {
+          console.log('회원가입 요청 받음:', body);
           const { username, password } = JSON.parse(body);
+          
+          if (!username || !password) {
+            console.log('사용자명 또는 비밀번호 누락');
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: false, message: '사용자명과 비밀번호를 모두 입력해주세요.' }));
+            return;
+          }
+          
+          if (username.length < 3) {
+            console.log('사용자명이 너무 짧음');
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: false, message: '사용자명은 3자 이상이어야 합니다.' }));
+            return;
+          }
+          
+          if (password.length < 4) {
+            console.log('비밀번호가 너무 짧음');
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: false, message: '비밀번호는 4자 이상이어야 합니다.' }));
+            return;
+          }
+          
+          console.log('회원가입 시도:', username);
           const result = createUser(username, password);
+          console.log('회원가입 결과:', result);
           
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify(result));
         } catch (error) {
+          console.error('회원가입 오류:', error);
           res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ success: false, message: '잘못된 요청입니다.' }));
+          res.end(JSON.stringify({ success: false, message: '회원가입 중 오류가 발생했습니다: ' + error.message }));
         }
       });
     }
