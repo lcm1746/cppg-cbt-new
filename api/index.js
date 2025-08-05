@@ -12,19 +12,40 @@ function loadQuestionsFromExcel() {
     const filePaths = [
       'cppg_qa_final.xlsx',
       '../cppg_qa_final.xlsx',
-      './cppg_qa_final.xlsx'
+      './cppg_qa_final.xlsx',
+      '../../cppg_qa_final.xlsx',
+      '../../../cppg_qa_final.xlsx',
+      '/tmp/cppg_qa_final.xlsx',
+      path.join(__dirname, 'cppg_qa_final.xlsx'),
+      path.join(__dirname, '..', 'cppg_qa_final.xlsx'),
+      path.join(__dirname, '..', '..', 'cppg_qa_final.xlsx'),
+      path.join(process.cwd(), 'cppg_qa_final.xlsx'),
+      path.join(process.cwd(), 'api', 'cppg_qa_final.xlsx')
     ];
 
     let filePath = null;
-    for (const path of filePaths) {
-      if (fs.existsSync(path)) {
-        filePath = path;
+    for (const testPath of filePaths) {
+      console.log(`파일 경로 확인 중: ${testPath}`);
+      if (fs.existsSync(testPath)) {
+        filePath = testPath;
+        console.log(`파일 발견: ${filePath}`);
         break;
       }
     }
 
     if (!filePath) {
-      console.log('엑셀 파일을 찾을 수 없습니다.');
+      console.log('엑셀 파일을 찾을 수 없습니다. 시도한 경로들:');
+      filePaths.forEach(p => console.log(`  - ${p}`));
+      
+      // 현재 디렉토리 파일 목록 출력
+      try {
+        console.log('현재 디렉토리 파일들:');
+        const files = fs.readdirSync('.');
+        files.forEach(file => console.log(`  - ${file}`));
+      } catch (e) {
+        console.log('현재 디렉토리 읽기 실패:', e.message);
+      }
+      
       return null;
     }
 
