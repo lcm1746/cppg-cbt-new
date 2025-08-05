@@ -1,0 +1,12 @@
+{
+  "name": "cppg-cbt",
+  "version": "1.0.0",
+  "description": "CPPG CBT System",
+  "main": "api/index.js",
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  },
+  "scripts": {
+    "start": "node api/index.js"
+  }
+} 
