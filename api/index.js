@@ -11,16 +11,27 @@ function loadQuestionsFromExcel() {
   try {
     const filePaths = [
       'cppg_qa_final.xlsx',
+      'cppg_qa_final.csv',
       '../cppg_qa_final.xlsx',
+      '../cppg_qa_final.csv',
       './cppg_qa_final.xlsx',
+      './cppg_qa_final.csv',
       '../../cppg_qa_final.xlsx',
+      '../../cppg_qa_final.csv',
       '../../../cppg_qa_final.xlsx',
+      '../../../cppg_qa_final.csv',
       '/tmp/cppg_qa_final.xlsx',
+      '/tmp/cppg_qa_final.csv',
       path.join(__dirname, 'cppg_qa_final.xlsx'),
+      path.join(__dirname, 'cppg_qa_final.csv'),
       path.join(__dirname, '..', 'cppg_qa_final.xlsx'),
+      path.join(__dirname, '..', 'cppg_qa_final.csv'),
       path.join(__dirname, '..', '..', 'cppg_qa_final.xlsx'),
+      path.join(__dirname, '..', '..', 'cppg_qa_final.csv'),
       path.join(process.cwd(), 'cppg_qa_final.xlsx'),
-      path.join(process.cwd(), 'api', 'cppg_qa_final.xlsx')
+      path.join(process.cwd(), 'cppg_qa_final.csv'),
+      path.join(process.cwd(), 'api', 'cppg_qa_final.xlsx'),
+      path.join(process.cwd(), 'api', 'cppg_qa_final.csv')
     ];
 
     let filePath = null;
@@ -34,7 +45,7 @@ function loadQuestionsFromExcel() {
     }
 
     if (!filePath) {
-      console.log('엑셀 파일을 찾을 수 없습니다. 시도한 경로들:');
+      console.log('엑셀/CSV 파일을 찾을 수 없습니다. 시도한 경로들:');
       filePaths.forEach(p => console.log(`  - ${p}`));
       
       // 현재 디렉토리 파일 목록 출력
@@ -50,10 +61,32 @@ function loadQuestionsFromExcel() {
     }
 
     console.log(`파일 로드 중: ${filePath}`);
-    const workbook = XLSX.readFile(filePath);
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-    const data = XLSX.utils.sheet_to_json(worksheet);
+    
+    let data;
+    if (filePath.endsWith('.csv')) {
+      // CSV 파일 읽기
+      const csvContent = fs.readFileSync(filePath, 'utf8');
+      const lines = csvContent.split('\n');
+      const headers = lines[0].split(',');
+      
+      data = [];
+      for (let i = 1; i < lines.length; i++) {
+        if (lines[i].trim()) {
+          const values = lines[i].split(',');
+          const row = {};
+          headers.forEach((header, index) => {
+            row[header.trim()] = values[index] ? values[index].trim() : '';
+          });
+          data.push(row);
+        }
+      }
+    } else {
+      // Excel 파일 읽기
+      const workbook = XLSX.readFile(filePath);
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      data = XLSX.utils.sheet_to_json(worksheet);
+    }
 
     console.log(`총 ${data.length}개 행 읽기 완료`);
 
@@ -139,7 +172,7 @@ function loadQuestionsFromExcel() {
     console.log('문제 로드 완료:', stats);
     return { questionsBySet, stats };
   } catch (error) {
-    console.error('엑셀 파일 처리 오류:', error);
+    console.error('파일 처리 오류:', error);
     return null;
   }
 }
@@ -243,6 +276,14 @@ module.exports = (req, res) => {
                 <a href="/random" class="btn">🎲 랜덤 연습</a>
                 <a href="/exam" class="btn">📝 시험 모드</a>
               </div>
+              <div style="text-align: center; margin-top: 20px;">
+                <h3>📖 세트별 연습</h3>
+                ${Object.keys(stats).filter(key => key.startsWith('세트')).map(setKey => {
+                  const setNum = setKey.replace('세트', '');
+                  const questionCount = stats[setKey];
+                  return `<a href="/set/${setNum}" class="btn" style="margin: 5px;">세트${setNum} (${questionCount}문제)</a>`;
+                }).join('')}
+              </div>
             `}
           </div>
         </body>
@@ -308,6 +349,23 @@ module.exports = (req, res) => {
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ questions: examQuestions }));
+    }
+    else if (pathname.startsWith('/api/set-questions/') && req.method === 'GET') {
+      // 세트별 문제 API
+      if (!questionsBySet) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: '문제가 로드되지 않았습니다.' }));
+        return;
+      }
+
+      const setNum = parseInt(pathname.split('/').pop());
+      const setQuestions = questionsBySet[setNum] || [];
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ 
+        questions: setQuestions.map(q => ({ ...q, set: setNum })),
+        setNumber: setNum
+      }));
     }
     else if (pathname === '/practice' && req.method === 'GET') {
       // 순차 연습 페이지
@@ -969,6 +1027,222 @@ module.exports = (req, res) => {
               
               document.getElementById('submitBtn').disabled = true;
               document.getElementById('timer').textContent = '시험 완료';
+            }
+          </script>
+        </body>
+        </html>
+      `;
+
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(html);
+    }
+    else if (pathname.startsWith('/set/') && req.method === 'GET') {
+      // 세트별 문제 풀이 페이지
+      const setNum = pathname.split('/').pop();
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>CPPG 세트${setNum} 연습</title>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+            .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            .question { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+            .option { margin: 10px 0; padding: 15px; border: 1px solid #eee; border-radius: 5px; cursor: pointer; transition: background 0.2s; }
+            .option:hover { background: #f8f9fa; }
+            .option.selected { background: #007bff; color: white; }
+            .option.correct { background: #28a745; color: white; }
+            .option.incorrect { background: #dc3545; color: white; }
+            .btn { display: inline-block; padding: 10px 20px; margin: 10px; 
+                   background: #007bff; color: white; text-decoration: none; 
+                   border-radius: 5px; cursor: pointer; border: none; }
+            .btn:disabled { background: #6c757d; cursor: not-allowed; }
+            .answer { margin-top: 20px; padding: 15px; background: #e7f3ff; border-radius: 5px; border-left: 4px solid #007bff; }
+            .timer { text-align: center; font-size: 18px; margin: 20px 0; }
+            .progress { text-align: center; margin: 20px 0; }
+            .controls { text-align: center; margin: 20px 0; }
+            .stats { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center; }
+            .stats span { margin: 0 15px; font-weight: bold; }
+            .correct-count { color: #28a745; }
+            .incorrect-count { color: #dc3545; }
+            .unanswered-count { color: #6c757d; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>CPPG 세트${setNum} 연습</h1>
+            <div class="timer" id="timer">시간: 00:00</div>
+            <div class="progress" id="progress">문제 1 / 0</div>
+            <div class="stats" id="stats">
+              <span class="correct-count">정답: 0</span>
+              <span class="incorrect-count">오답: 0</span>
+              <span class="unanswered-count">미답: 0</span>
+            </div>
+            <div id="question-container">
+              <p>문제를 불러오는 중...</p>
+            </div>
+            <div class="controls">
+              <button class="btn" id="prevBtn" onclick="prevQuestion()" disabled>이전</button>
+              <button class="btn" id="nextBtn" onclick="nextQuestion()" disabled>다음</button>
+              <button class="btn" id="submitBtn" onclick="submitAnswer()" disabled>정답 확인</button>
+            </div>
+            <div id="answer-container"></div>
+            <a href="/" class="btn">메인으로 돌아가기</a>
+          </div>
+          <script>
+            let questions = [];
+            let currentQuestionIndex = 0;
+            let selectedAnswer = null;
+            let startTime = Date.now();
+            let timerInterval;
+            let answers = {}; // 답안 기록
+            let correctCount = 0;
+            let incorrectCount = 0;
+
+            // 타이머 시작
+            function startTimer() {
+              timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('timer').textContent = \`시간: \${minutes.toString().padStart(2, '0')}:\${seconds.toString().padStart(2, '0')}\`;
+              }, 1000);
+            }
+
+            // 통계 업데이트
+            function updateStats() {
+              const answeredCount = Object.keys(answers).length;
+              const unansweredCount = questions.length - answeredCount;
+              document.getElementById('stats').innerHTML = \`
+                <span class="correct-count">정답: \${correctCount}</span>
+                <span class="incorrect-count">오답: \${incorrectCount}</span>
+                <span class="unanswered-count">미답: \${unansweredCount}</span>
+              \`;
+            }
+
+            // 문제 로드
+            fetch('/api/set-questions/${setNum}')
+              .then(response => response.json())
+              .then(data => {
+                if (data.questions && data.questions.length > 0) {
+                  questions = data.questions;
+                  displayQuestion();
+                  startTimer();
+                  updateStats();
+                } else {
+                  document.getElementById('question-container').innerHTML = '<p>해당 세트의 문제를 불러올 수 없습니다.</p>';
+                }
+              });
+
+            function displayQuestion() {
+              const question = questions[currentQuestionIndex];
+              const container = document.getElementById('question-container');
+              const previousAnswer = answers[currentQuestionIndex];
+              
+              container.innerHTML = \`
+                <div class="question">
+                  <h3>문제 \${question.number} (세트${question.set})</h3>
+                  <p>\${question.text}</p>
+                  <div class="options">
+                    \${question.options.map((option, index) => {
+                      let className = 'option';
+                      if (previousAnswer !== undefined) {
+                        if (index === question.correct) {
+                          className += ' correct';
+                        } else if (index === previousAnswer && previousAnswer !== question.correct) {
+                          className += ' incorrect';
+                        }
+                      } else if (index === selectedAnswer) {
+                        className += ' selected';
+                      }
+                      return \`<div class="\${className}" onclick="selectOption(\${index})">\${index + 1}. \${option}</div>\`;
+                    }).join('')}
+                  </div>
+                </div>
+              \`;
+              
+              document.getElementById('progress').textContent = \`문제 \${currentQuestionIndex + 1} / \${questions.length}\`;
+              updateButtons();
+            }
+
+            function selectOption(index) {
+              if (answers[currentQuestionIndex] !== undefined) return; // 이미 답한 문제는 변경 불가
+              
+              selectedAnswer = index;
+              document.querySelectorAll('.option').forEach((opt, i) => {
+                opt.classList.remove('selected');
+                if (i === index) opt.classList.add('selected');
+              });
+              document.getElementById('submitBtn').disabled = false;
+            }
+
+            function submitAnswer() {
+              if (selectedAnswer === null) return;
+              
+              const question = questions[currentQuestionIndex];
+              const isCorrect = selectedAnswer === question.correct;
+              
+              // 답안 기록
+              answers[currentQuestionIndex] = selectedAnswer;
+              
+              // 정답/오답 카운트 업데이트
+              if (isCorrect) {
+                correctCount++;
+              } else {
+                incorrectCount++;
+              }
+              
+              // 정답/오답 표시
+              document.querySelectorAll('.option').forEach((opt, i) => {
+                opt.classList.remove('selected', 'correct', 'incorrect');
+                if (i === question.correct) {
+                  opt.classList.add('correct');
+                } else if (i === selectedAnswer && !isCorrect) {
+                  opt.classList.add('incorrect');
+                }
+              });
+              
+              // 모범답안 표시
+              const answerContainer = document.getElementById('answer-container');
+              answerContainer.innerHTML = \`
+                <div class="answer">
+                  <h4>\${isCorrect ? '✅ 정답입니다!' : '❌ 틀렸습니다.'}</h4>
+                  <p><strong>정답:</strong> \${question.correct + 1}. \${question.options[question.correct]}</p>
+                  <p><strong>해설:</strong> \${question.answer}</p>
+                </div>
+              \`;
+              
+              document.getElementById('submitBtn').disabled = true;
+              document.getElementById('nextBtn').disabled = false;
+              updateStats();
+            }
+
+            function nextQuestion() {
+              if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                selectedAnswer = null;
+                document.getElementById('answer-container').innerHTML = '';
+                displayQuestion();
+                document.getElementById('submitBtn').disabled = true;
+                document.getElementById('nextBtn').disabled = true;
+              }
+            }
+
+            function prevQuestion() {
+              if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                selectedAnswer = null;
+                document.getElementById('answer-container').innerHTML = '';
+                displayQuestion();
+                document.getElementById('submitBtn').disabled = true;
+                document.getElementById('nextBtn').disabled = true;
+              }
+            }
+
+            function updateButtons() {
+              document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+              document.getElementById('nextBtn').disabled = currentQuestionIndex === questions.length - 1;
             }
           </script>
         </body>
