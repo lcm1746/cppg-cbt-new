@@ -229,14 +229,16 @@ if (!questionsBySet) {
 }
 
 module.exports = (req, res) => {
-  // CORS 헤더 설정
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  const { pathname } = new URL(req.url, `http://${req.headers.host}`);
-
   try {
+    // CORS 헤더 설정
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    const { pathname } = new URL(req.url, `http://${req.headers.host}`);
+
+    console.log(`요청 경로: ${pathname}`);
+
     if (pathname === '/' && req.method === 'GET') {
       // 메인 페이지
       const html = `
@@ -359,12 +361,23 @@ module.exports = (req, res) => {
       }
 
       const setNum = parseInt(pathname.split('/').pop());
+      
+      // 세트 번호 유효성 검사
+      if (isNaN(setNum)) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: '잘못된 세트 번호입니다.' }));
+        return;
+      }
+      
       const setQuestions = questionsBySet[setNum] || [];
+      
+      console.log(`세트 ${setNum} 문제 요청: ${setQuestions.length}개 문제`);
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ 
         questions: setQuestions.map(q => ({ ...q, set: setNum })),
-        setNumber: setNum
+        setNumber: setNum,
+        questionCount: setQuestions.length
       }));
     }
     else if (pathname === '/practice' && req.method === 'GET') {
@@ -1039,6 +1052,14 @@ module.exports = (req, res) => {
     else if (pathname.startsWith('/set/') && req.method === 'GET') {
       // 세트별 문제 풀이 페이지
       const setNum = pathname.split('/').pop();
+      
+      // 세트 번호 유효성 검사
+      if (!setNum || isNaN(parseInt(setNum))) {
+        res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end('<h1>잘못된 세트 번호입니다.</h1>');
+        return;
+      }
+      
       const html = `
         <!DOCTYPE html>
         <html>
@@ -1067,6 +1088,7 @@ module.exports = (req, res) => {
             .correct-count { color: #28a745; }
             .incorrect-count { color: #dc3545; }
             .unanswered-count { color: #6c757d; }
+            .error { background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin: 20px 0; }
           </style>
         </head>
         <body>
@@ -1123,19 +1145,50 @@ module.exports = (req, res) => {
 
             // 문제 로드
             fetch('/api/set-questions/${setNum}')
-              .then(response => response.json())
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error('Network response was not ok');
+                }
+                return response.json();
+              })
               .then(data => {
+                if (data.error) {
+                  document.getElementById('question-container').innerHTML = \`
+                    <div class="error">
+                      <h3>오류 발생</h3>
+                      <p>\${data.error}</p>
+                    </div>
+                  \`;
+                  return;
+                }
                 if (data.questions && data.questions.length > 0) {
                   questions = data.questions;
                   displayQuestion();
                   startTimer();
                   updateStats();
                 } else {
-                  document.getElementById('question-container').innerHTML = '<p>해당 세트의 문제를 불러올 수 없습니다.</p>';
+                  document.getElementById('question-container').innerHTML = \`
+                    <div class="error">
+                      <h3>문제 없음</h3>
+                      <p>세트${setNum}에는 문제가 없습니다.</p>
+                    </div>
+                  \`;
                 }
+              })
+              .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('question-container').innerHTML = \`
+                  <div class="error">
+                    <h3>문제 로드 실패</h3>
+                    <p>문제를 불러오는 중 오류가 발생했습니다.</p>
+                    <p>오류: \${error.message}</p>
+                  </div>
+                \`;
               });
 
             function displayQuestion() {
+              if (questions.length === 0) return;
+              
               const question = questions[currentQuestionIndex];
               const container = document.getElementById('question-container');
               const previousAnswer = answers[currentQuestionIndex];
@@ -1251,15 +1304,15 @@ module.exports = (req, res) => {
 
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       res.end(html);
-    }
-    else {
+    } else {
       // 404 페이지
       res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
       res.end('<h1>404 - 페이지를 찾을 수 없습니다</h1>');
     }
   } catch (error) {
-    console.error('Error:', error);
+    console.error('서버 오류:', error);
+    console.error('오류 스택:', error.stack);
     res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end('<h1>Internal Server Error</h1>');
+    res.end('<h1>Internal Server Error</h1><p>서버에서 오류가 발생했습니다.</p>');
   }
 }; 
