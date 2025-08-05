@@ -230,12 +230,102 @@ def get_random_questions():
 # Vercel 서버리스 함수
 def handler(request, context):
     try:
-        return app(request, context)
+        # 간단한 라우팅
+        path = request.get('path', '/')
+        method = request.get('method', 'GET')
+        
+        if path == '/' and method == 'GET':
+            global QUESTIONS_BY_SET, STATS
+            if QUESTIONS_BY_SET is None:
+                QUESTIONS_BY_SET, STATS = load_questions_from_file()
+            
+            if QUESTIONS_BY_SET is None:
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'text/html'},
+                    'body': '<h1>문제 파일을 로드할 수 없습니다.</h1>'
+                }
+            
+            # 간단한 HTML 응답
+            html = f'''
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>CPPG CBT 시스템</title>
+                <meta charset="utf-8">
+                <style>
+                    body {{ font-family: Arial, sans-serif; margin: 40px; }}
+                    .container {{ max-width: 800px; margin: 0 auto; }}
+                    .btn {{ display: inline-block; padding: 10px 20px; margin: 10px; 
+                           background: #007bff; color: white; text-decoration: none; 
+                           border-radius: 5px; }}
+                    .stats {{ background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>CPPG CBT 시스템</h1>
+                    <div class="stats">
+                        <h3>문제 통계</h3>
+                        <p>총 문제수: {STATS.get("총문제수", 0)}개</p>
+                        <p>세트1: {STATS.get("세트1", 0)}개</p>
+                        <p>세트2: {STATS.get("세트2", 0)}개</p>
+                        <p>세트3: {STATS.get("세트3", 0)}개</p>
+                        <p>세트4: {STATS.get("세트4", 0)}개</p>
+                        <p>세트5: {STATS.get("세트5", 0)}개</p>
+                    </div>
+                    <a href="/practice" class="btn">순차 연습</a>
+                    <a href="/random" class="btn">랜덤 연습</a>
+                    <a href="/exam" class="btn">시험 모드</a>
+                </div>
+            </body>
+            </html>
+            '''
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'text/html'},
+                'body': html
+            }
+        
+        elif path == '/api/questions' and method == 'GET':
+            global QUESTIONS_BY_SET
+            if QUESTIONS_BY_SET is None:
+                QUESTIONS_BY_SET, _ = load_questions_from_file()
+            
+            if not QUESTIONS_BY_SET:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json'},
+                    'body': json.dumps({'error': '문제가 로드되지 않았습니다.'})
+                }
+            
+            all_questions = []
+            for set_num, questions in QUESTIONS_BY_SET.items():
+                for question in questions:
+                    question_copy = question.copy()
+                    question_copy['set'] = set_num
+                    all_questions.append(question_copy)
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json'},
+                'body': json.dumps({'questions': all_questions})
+            }
+        
+        else:
+            return {
+                'statusCode': 404,
+                'headers': {'Content-Type': 'text/html'},
+                'body': '<h1>404 - 페이지를 찾을 수 없습니다</h1>'
+            }
+            
     except Exception as e:
         print(f"Error in handler: {e}")
         return {
             'statusCode': 500,
-            'body': f'Internal Server Error: {str(e)}'
+            'headers': {'Content-Type': 'text/html'},
+            'body': f'<h1>Internal Server Error: {str(e)}</h1>'
         }
 
 if __name__ == '__main__':
