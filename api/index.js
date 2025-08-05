@@ -313,6 +313,11 @@ module.exports = (req, res) => {
             .timer { text-align: center; font-size: 18px; margin: 20px 0; }
             .progress { text-align: center; margin: 20px 0; }
             .controls { text-align: center; margin: 20px 0; }
+            .stats { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center; }
+            .stats span { margin: 0 15px; font-weight: bold; }
+            .correct-count { color: #28a745; }
+            .incorrect-count { color: #dc3545; }
+            .unanswered-count { color: #6c757d; }
           </style>
         </head>
         <body>
@@ -320,6 +325,11 @@ module.exports = (req, res) => {
             <h1>CPPG 순차 연습</h1>
             <div class="timer" id="timer">시간: 00:00</div>
             <div class="progress" id="progress">문제 1 / 0</div>
+            <div class="stats" id="stats">
+              <span class="correct-count">정답: 0</span>
+              <span class="incorrect-count">오답: 0</span>
+              <span class="unanswered-count">미답: 0</span>
+            </div>
             <div id="question-container">
               <p>문제를 불러오는 중...</p>
             </div>
@@ -337,6 +347,9 @@ module.exports = (req, res) => {
             let selectedAnswer = null;
             let startTime = Date.now();
             let timerInterval;
+            let answers = {}; // 답안 기록
+            let correctCount = 0;
+            let incorrectCount = 0;
 
             // 타이머 시작
             function startTimer() {
@@ -348,6 +361,17 @@ module.exports = (req, res) => {
               }, 1000);
             }
 
+            // 통계 업데이트
+            function updateStats() {
+              const answeredCount = Object.keys(answers).length;
+              const unansweredCount = questions.length - answeredCount;
+              document.getElementById('stats').innerHTML = \`
+                <span class="correct-count">정답: \${correctCount}</span>
+                <span class="incorrect-count">오답: \${incorrectCount}</span>
+                <span class="unanswered-count">미답: \${unansweredCount}</span>
+              \`;
+            }
+
             // 문제 로드
             fetch('/api/questions')
               .then(response => response.json())
@@ -356,6 +380,7 @@ module.exports = (req, res) => {
                   questions = data.questions;
                   displayQuestion();
                   startTimer();
+                  updateStats();
                 } else {
                   document.getElementById('question-container').innerHTML = '<p>문제를 불러올 수 없습니다.</p>';
                 }
@@ -364,15 +389,26 @@ module.exports = (req, res) => {
             function displayQuestion() {
               const question = questions[currentQuestionIndex];
               const container = document.getElementById('question-container');
+              const previousAnswer = answers[currentQuestionIndex];
               
               container.innerHTML = \`
                 <div class="question">
                   <h3>문제 \${question.number} (세트\${question.set})</h3>
                   <p>\${question.text}</p>
                   <div class="options">
-                    \${question.options.map((option, index) => 
-                      \`<div class="option" onclick="selectOption(\${index})">\${index + 1}. \${option}</div>\`
-                    ).join('')}
+                    \${question.options.map((option, index) => {
+                      let className = 'option';
+                      if (previousAnswer !== undefined) {
+                        if (index === question.correct) {
+                          className += ' correct';
+                        } else if (index === previousAnswer && previousAnswer !== question.correct) {
+                          className += ' incorrect';
+                        }
+                      } else if (index === selectedAnswer) {
+                        className += ' selected';
+                      }
+                      return \`<div class="\${className}" onclick="selectOption(\${index})">\${index + 1}. \${option}</div>\`;
+                    }).join('')}
                   </div>
                 </div>
               \`;
@@ -382,6 +418,8 @@ module.exports = (req, res) => {
             }
 
             function selectOption(index) {
+              if (answers[currentQuestionIndex] !== undefined) return; // 이미 답한 문제는 변경 불가
+              
               selectedAnswer = index;
               document.querySelectorAll('.option').forEach((opt, i) => {
                 opt.classList.remove('selected');
@@ -395,6 +433,16 @@ module.exports = (req, res) => {
               
               const question = questions[currentQuestionIndex];
               const isCorrect = selectedAnswer === question.correct;
+              
+              // 답안 기록
+              answers[currentQuestionIndex] = selectedAnswer;
+              
+              // 정답/오답 카운트 업데이트
+              if (isCorrect) {
+                correctCount++;
+              } else {
+                incorrectCount++;
+              }
               
               // 정답/오답 표시
               document.querySelectorAll('.option').forEach((opt, i) => {
@@ -418,6 +466,7 @@ module.exports = (req, res) => {
               
               document.getElementById('submitBtn').disabled = true;
               document.getElementById('nextBtn').disabled = false;
+              updateStats();
             }
 
             function nextQuestion() {
@@ -455,7 +504,7 @@ module.exports = (req, res) => {
       res.end(html);
     }
     else if (pathname === '/random' && req.method === 'GET') {
-      // 랜덤 연습 페이지 (순차 연습과 비슷하지만 랜덤 문제)
+      // 랜덤 연습 페이지 (틀린 문제만 다시 나오는 기능 포함)
       const html = `
         <!DOCTYPE html>
         <html>
@@ -479,6 +528,14 @@ module.exports = (req, res) => {
             .timer { text-align: center; font-size: 18px; margin: 20px 0; }
             .progress { text-align: center; margin: 20px 0; }
             .controls { text-align: center; margin: 20px 0; }
+            .stats { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center; }
+            .stats span { margin: 0 15px; font-weight: bold; }
+            .correct-count { color: #28a745; }
+            .incorrect-count { color: #dc3545; }
+            .unanswered-count { color: #6c757d; }
+            .mode-switch { text-align: center; margin: 20px 0; }
+            .mode-btn { background: #6c757d; }
+            .mode-btn.active { background: #007bff; }
           </style>
         </head>
         <body>
@@ -486,6 +543,15 @@ module.exports = (req, res) => {
             <h1>CPPG 랜덤 연습</h1>
             <div class="timer" id="timer">시간: 00:00</div>
             <div class="progress" id="progress">문제 1 / 0</div>
+            <div class="stats" id="stats">
+              <span class="correct-count">정답: 0</span>
+              <span class="incorrect-count">오답: 0</span>
+              <span class="unanswered-count">미답: 0</span>
+            </div>
+            <div class="mode-switch">
+              <button class="btn mode-btn active" id="allMode" onclick="switchMode('all')">전체 문제</button>
+              <button class="btn mode-btn" id="wrongMode" onclick="switchMode('wrong')">틀린 문제만</button>
+            </div>
             <div id="question-container">
               <p>문제를 불러오는 중...</p>
             </div>
@@ -498,11 +564,16 @@ module.exports = (req, res) => {
             <a href="/" class="btn">메인으로 돌아가기</a>
           </div>
           <script>
-            let questions = [];
+            let allQuestions = [];
+            let currentQuestions = [];
             let currentQuestionIndex = 0;
             let selectedAnswer = null;
             let startTime = Date.now();
             let timerInterval;
+            let answers = {}; // 답안 기록
+            let correctCount = 0;
+            let incorrectCount = 0;
+            let currentMode = 'all';
 
             function startTimer() {
               timerInterval = setInterval(() => {
@@ -513,39 +584,97 @@ module.exports = (req, res) => {
               }, 1000);
             }
 
+            function updateStats() {
+              const answeredCount = Object.keys(answers).length;
+              const unansweredCount = allQuestions.length - answeredCount;
+              document.getElementById('stats').innerHTML = \`
+                <span class="correct-count">정답: \${correctCount}</span>
+                <span class="incorrect-count">오답: \${incorrectCount}</span>
+                <span class="unanswered-count">미답: \${unansweredCount}</span>
+              \`;
+            }
+
+            function switchMode(mode) {
+              currentMode = mode;
+              document.getElementById('allMode').classList.toggle('active', mode === 'all');
+              document.getElementById('wrongMode').classList.toggle('active', mode === 'wrong');
+              
+              if (mode === 'all') {
+                currentQuestions = [...allQuestions];
+              } else {
+                // 틀린 문제만 필터링
+                currentQuestions = allQuestions.filter((q, index) => {
+                  const answer = answers[index];
+                  return answer !== undefined && answer !== q.correct;
+                });
+              }
+              
+              if (currentQuestions.length === 0) {
+                document.getElementById('question-container').innerHTML = '<p>해당하는 문제가 없습니다.</p>';
+                return;
+              }
+              
+              currentQuestionIndex = 0;
+              selectedAnswer = null;
+              document.getElementById('answer-container').innerHTML = '';
+              displayQuestion();
+              document.getElementById('submitBtn').disabled = true;
+              document.getElementById('nextBtn').disabled = true;
+            }
+
             fetch('/api/random-questions')
               .then(response => response.json())
               .then(data => {
                 if (data.questions && data.questions.length > 0) {
-                  questions = data.questions;
+                  allQuestions = data.questions;
+                  currentQuestions = [...allQuestions];
                   displayQuestion();
                   startTimer();
+                  updateStats();
                 } else {
                   document.getElementById('question-container').innerHTML = '<p>문제를 불러올 수 없습니다.</p>';
                 }
               });
 
             function displayQuestion() {
-              const question = questions[currentQuestionIndex];
+              if (currentQuestions.length === 0) return;
+              
+              const question = currentQuestions[currentQuestionIndex];
               const container = document.getElementById('question-container');
+              const originalIndex = allQuestions.indexOf(question);
+              const previousAnswer = answers[originalIndex];
               
               container.innerHTML = \`
                 <div class="question">
                   <h3>문제 \${question.number} (세트\${question.set})</h3>
                   <p>\${question.text}</p>
                   <div class="options">
-                    \${question.options.map((option, index) => 
-                      \`<div class="option" onclick="selectOption(\${index})">\${index + 1}. \${option}</div>\`
-                    ).join('')}
+                    \${question.options.map((option, index) => {
+                      let className = 'option';
+                      if (previousAnswer !== undefined) {
+                        if (index === question.correct) {
+                          className += ' correct';
+                        } else if (index === previousAnswer && previousAnswer !== question.correct) {
+                          className += ' incorrect';
+                        }
+                      } else if (index === selectedAnswer) {
+                        className += ' selected';
+                      }
+                      return \`<div class="\${className}" onclick="selectOption(\${index})">\${index + 1}. \${option}</div>\`;
+                    }).join('')}
                   </div>
                 </div>
               \`;
               
-              document.getElementById('progress').textContent = \`문제 \${currentQuestionIndex + 1} / \${questions.length}\`;
+              document.getElementById('progress').textContent = \`문제 \${currentQuestionIndex + 1} / \${currentQuestions.length}\`;
               updateButtons();
             }
 
             function selectOption(index) {
+              const question = currentQuestions[currentQuestionIndex];
+              const originalIndex = allQuestions.indexOf(question);
+              if (answers[originalIndex] !== undefined) return; // 이미 답한 문제는 변경 불가
+              
               selectedAnswer = index;
               document.querySelectorAll('.option').forEach((opt, i) => {
                 opt.classList.remove('selected');
@@ -557,9 +686,21 @@ module.exports = (req, res) => {
             function submitAnswer() {
               if (selectedAnswer === null) return;
               
-              const question = questions[currentQuestionIndex];
+              const question = currentQuestions[currentQuestionIndex];
+              const originalIndex = allQuestions.indexOf(question);
               const isCorrect = selectedAnswer === question.correct;
               
+              // 답안 기록
+              answers[originalIndex] = selectedAnswer;
+              
+              // 정답/오답 카운트 업데이트
+              if (isCorrect) {
+                correctCount++;
+              } else {
+                incorrectCount++;
+              }
+              
+              // 정답/오답 표시
               document.querySelectorAll('.option').forEach((opt, i) => {
                 opt.classList.remove('selected', 'correct', 'incorrect');
                 if (i === question.correct) {
@@ -569,6 +710,7 @@ module.exports = (req, res) => {
                 }
               });
               
+              // 모범답안 표시
               const answerContainer = document.getElementById('answer-container');
               answerContainer.innerHTML = \`
                 <div class="answer">
@@ -580,10 +722,11 @@ module.exports = (req, res) => {
               
               document.getElementById('submitBtn').disabled = true;
               document.getElementById('nextBtn').disabled = false;
+              updateStats();
             }
 
             function nextQuestion() {
-              if (currentQuestionIndex < questions.length - 1) {
+              if (currentQuestionIndex < currentQuestions.length - 1) {
                 currentQuestionIndex++;
                 selectedAnswer = null;
                 document.getElementById('answer-container').innerHTML = '';
@@ -606,7 +749,7 @@ module.exports = (req, res) => {
 
             function updateButtons() {
               document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
-              document.getElementById('nextBtn').disabled = currentQuestionIndex === questions.length - 1;
+              document.getElementById('nextBtn').disabled = currentQuestionIndex === currentQuestions.length - 1;
             }
           </script>
         </body>
