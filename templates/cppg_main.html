@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>CPPG CBT 시스템</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #666;
+            font-size: 1.2em;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        .stats-section {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        .mode-selection {
+            margin-top: 30px;
+        }
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .mode-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .mode-card:hover {
+            border-color: #4CAF50;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .mode-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        .mode-card p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .mode-btn {
+            background: #007bff;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin: 5px;
+        }
+        .mode-btn:hover {
+            background: #0056b3;
+        }
+        .mode-btn.sequential {
+            background: #28a745;
+        }
+        .mode-btn.sequential:hover {
+            background: #218838;
+        }
+        .mode-btn.random {
+            background: #ffc107;
+            color: #212529;
+        }
+        .mode-btn.random:hover {
+            background: #e0a800;
+        }
+        .mode-btn.exam {
+            background: #dc3545;
+        }
+        .mode-btn.exam:hover {
+            background: #c82333;
+        }
+        .exam-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 14px;
+            color: #856404;
+        }
+        .exam-info h4 {
+            margin: 0 0 10px 0;
+            color: #856404;
+        }
+        .exam-info ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .exam-info li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 CPPG CBT 시스템</h1>
+            <p>개인정보관리사(CPPG) 자격증 시험 대비 연습 시스템</p>
+        </div>
+
+        {% if error %}
+        <div class="error">
+            {{ error }}
+        </div>
+        {% else %}
+        <div class="stats-section">
+            <h3>📈 문제 통계</h3>
+            <div class="stats-grid">
+                {% for key, value in stats.items() %}
+                <div class="stat-item">
+                    <div class="stat-value">{{ value }}</div>
+                    <div class="stat-label">{{ key }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="mode-selection">
+            <h3>🎯 연습 모드 선택</h3>
+            <div class="mode-grid">
+                <div class="mode-card">
+                    <h3>📖 순차 연습</h3>
+                    <p>1번 문제부터 차례대로 연습합니다.<br>기초부터 차근차근 학습하고 싶을 때 추천합니다.</p>
+                    <button class="mode-btn sequential" onclick="startSequentialPractice()">1번부터 시작</button>
+                </div>
+                
+                <div class="mode-card">
+                    <h3>🎲 랜덤 연습</h3>
+                    <p>문제를 무작위로 출제합니다.<br>실전 감각을 기르고 싶을 때 추천합니다.</p>
+                    <button class="mode-btn random" onclick="startRandomPractice()">랜덤으로 시작</button>
+                </div>
+                
+                <div class="mode-card">
+                    <h3>📝 실전 시험</h3>
+                    <p>실제 CPPG 시험과 동일한 형식으로 진행합니다.<br>120분 제한시간, 100문제 출제</p>
+                    <div class="exam-info">
+                        <h4>📋 시험 구성</h4>
+                        <ul>
+                            <li>1과목 (개인정보보호의 이해): 10문제</li>
+                            <li>2과목 (개인정보보호 제도): 20문제</li>
+                            <li>3과목 (개인정보 라이프사이클 관리): 25문제</li>
+                            <li>4과목 (개인정보의 보호조치): 30문제</li>
+                            <li>5과목 (개인정보 관리체계): 15문제</li>
+                        </ul>
+                    </div>
+                    <button class="mode-btn exam" onclick="startExam()">시험 시작</button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function startSequentialPractice() {
+            // 순차 연습 모드로 이동
+            localStorage.setItem('cppg_mode', 'sequential');
+            window.location.href = '/practice';
+        }
+
+        function startRandomPractice() {
+            // 랜덤 연습 모드로 이동
+            localStorage.setItem('cppg_mode', 'random');
+            window.location.href = '/practice';
+        }
+
+        function startExam() {
+            // 시험 모드로 이동
+            localStorage.setItem('cppg_mode', 'exam');
+            window.location.href = '/exam';
+        }
+    </script>
+</body>
+</html> 
