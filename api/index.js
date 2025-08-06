@@ -16,25 +16,31 @@ function loadUsers() {
     if (fs.existsSync(USERS_FILE)) {
       const data = fs.readFileSync(USERS_FILE, 'utf8');
       usersData = JSON.parse(data);
+      console.log('사용자 데이터 로드 완료:', Object.keys(usersData.users).length, '명');
+      return usersData;
+    } else {
+      console.log('사용자 파일이 없습니다. 새로 생성합니다.');
+      usersData = { users: {} };
       return usersData;
     }
   } catch (error) {
     console.error('사용자 데이터 로드 오류:', error);
+    usersData = { users: {} };
+    return usersData;
   }
-  return usersData;
 }
 
 // 사용자 데이터 저장 (파일에)
 function saveUsers(data) {
   try {
     usersData = data;
-    // 파일에도 저장 시도
+    // 파일에 저장
     fs.writeFileSync(USERS_FILE, JSON.stringify(data, null, 2), 'utf8');
+    console.log('사용자 데이터 저장 완료:', Object.keys(data.users).length, '명');
     return true;
   } catch (error) {
     console.error('사용자 데이터 저장 오류:', error);
-    // 파일 저장 실패해도 메모리에는 저장
-    return true;
+    return false;
   }
 }
 
@@ -605,8 +611,17 @@ module.exports = (req, res) => {
           }
           
           console.log('로그인 시도:', username);
+          
+          // 현재 저장된 사용자 목록 확인
+          const currentUsers = loadUsers();
+          console.log('현재 저장된 사용자 목록:', Object.keys(currentUsers.users));
+          console.log('로그인 시도한 사용자 존재 여부:', currentUsers.users[username] ? '존재' : '존재하지 않음');
+          
           const result = authenticateUser(username, password);
           console.log('로그인 결과:', result.success ? '성공' : '실패');
+          if (!result.success) {
+            console.log('로그인 실패 이유:', result.message);
+          }
           
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify(result));
@@ -652,6 +667,11 @@ module.exports = (req, res) => {
           console.log('회원가입 시도:', username);
           const result = createUser(username, password);
           console.log('회원가입 결과:', result);
+          
+          // 저장 후 확인
+          const savedUsers = loadUsers();
+          console.log('저장된 사용자 목록:', Object.keys(savedUsers.users));
+          console.log('새로 가입한 사용자 확인:', savedUsers.users[username] ? '성공' : '실패');
           
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify(result));
