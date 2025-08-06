@@ -1,3 +1,19 @@
 {
-  "users": {}
+  "users": {
+    "admin": {
+      "password": "1234",
+      "createdAt": "2024-01-01T00:00:00.000000",
+      "role": "admin",
+      "stats": {
+        "totalQuestions": 0,
+        "correctAnswers": 0,
+        "incorrectAnswers": 0,
+        "totalStudyTime": 0,
+        "lastPracticeDate": null,
+        "practiceHistory": [],
+        "wrongQuestions": [],
+        "lastSequentialPosition": 0
+      }
+    }
+  }
 } 
