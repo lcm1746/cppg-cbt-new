@@ -382,10 +382,15 @@ function shuffleArray(array) {
 
 // 문제 로드 (한 번만)
 if (!questionsBySet) {
+  console.log('문제 로드 시작...');
   const result = loadQuestionsFromExcel();
   if (result) {
     questionsBySet = result.questionsBySet;
     stats = result.stats;
+    console.log('문제 로드 완료:', Object.keys(questionsBySet).length, '개 세트');
+    console.log('통계:', stats);
+  } else {
+    console.log('문제 로드 실패!');
   }
 }
 
@@ -821,7 +826,11 @@ module.exports = (req, res) => {
     }
     else if (pathname === '/api/questions' && req.method === 'GET') {
       // 순차 문제 API
+      console.log('순차 문제 API 호출됨');
+      console.log('questionsBySet 상태:', questionsBySet ? '로드됨' : '로드되지 않음');
+      
       if (!questionsBySet) {
+        console.log('문제가 로드되지 않았습니다.');
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '문제가 로드되지 않았습니다.' }));
         return;
@@ -829,6 +838,7 @@ module.exports = (req, res) => {
 
       const allQuestions = [];
       for (const [setNum, questions] of Object.entries(questionsBySet)) {
+        console.log(`세트 ${setNum}: ${questions.length}개 문제`);
         questions.forEach(question => {
           allQuestions.push({
             ...question,
@@ -837,6 +847,7 @@ module.exports = (req, res) => {
         });
       }
 
+      console.log(`총 ${allQuestions.length}개 문제 반환`);
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ questions: allQuestions }));
     }
