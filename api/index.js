@@ -60,17 +60,6 @@ if (!usersData.users['test']) {
   saveUsers(usersData);
 }
 
-// 사용자 데이터 로드 (메모리에서)
-function loadUsers() {
-  return usersData;
-}
-
-// 사용자 데이터 저장 (메모리에)
-function saveUsers(data) {
-  usersData = data;
-  return true;
-}
-
 // 사용자 생성
 function createUser(username, password) {
   const usersData = loadUsers();
@@ -384,13 +373,24 @@ function shuffleArray(array) {
 if (!questionsBySet) {
   console.log('문제 로드 시작...');
   const result = loadQuestionsFromExcel();
-  if (result) {
+  if (result && result.questionsBySet && Object.keys(result.questionsBySet).length > 0) {
     questionsBySet = result.questionsBySet;
     stats = result.stats;
     console.log('문제 로드 완료:', Object.keys(questionsBySet).length, '개 세트');
     console.log('통계:', stats);
   } else {
-    console.log('문제 로드 실패!');
+    console.log('문제 로드 실패! 재시도 중...');
+    // 재시도 로직
+    setTimeout(() => {
+      const retryResult = loadQuestionsFromExcel();
+      if (retryResult && retryResult.questionsBySet && Object.keys(retryResult.questionsBySet).length > 0) {
+        questionsBySet = retryResult.questionsBySet;
+        stats = retryResult.stats;
+        console.log('재시도 성공 - 문제 로드 완료:', Object.keys(questionsBySet).length, '개 세트');
+      } else {
+        console.log('재시도도 실패했습니다.');
+      }
+    }, 1000);
   }
 }
 
@@ -829,11 +829,20 @@ module.exports = (req, res) => {
       console.log('순차 문제 API 호출됨');
       console.log('questionsBySet 상태:', questionsBySet ? '로드됨' : '로드되지 않음');
       
-      if (!questionsBySet) {
-        console.log('문제가 로드되지 않았습니다.');
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: '문제가 로드되지 않았습니다.' }));
-        return;
+      if (!questionsBySet || Object.keys(questionsBySet).length === 0) {
+        console.log('문제가 로드되지 않았습니다. 재시도 중...');
+        // 재시도 로직
+        const retryResult = loadQuestionsFromExcel();
+        if (retryResult && retryResult.questionsBySet && Object.keys(retryResult.questionsBySet).length > 0) {
+          questionsBySet = retryResult.questionsBySet;
+          stats = retryResult.stats;
+          console.log('재시도 성공 - 문제 로드 완료');
+        } else {
+          console.log('재시도도 실패했습니다.');
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: '문제를 로드할 수 없습니다. 서버를 재시작해주세요.' }));
+          return;
+        }
       }
 
       const allQuestions = [];
@@ -970,6 +979,9 @@ module.exports = (req, res) => {
               <button class="btn" id="submitBtn" onclick="submitAnswer()" disabled>정답 확인</button>
             </div>
             
+            <!-- 문제 컨테이너 -->
+            <div id="question-container"></div>
+            
             <!-- Google AdSense 광고 영역 -->
             <div class="ad-container" style="text-align: center; margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 5px;">
               <div class="ad-placeholder" style="min-height: 60px; display: flex; align-items: center; justify-content: center; color: #666; border: 2px dashed #ddd; font-size: 12px;">
@@ -1038,11 +1050,15 @@ module.exports = (req, res) => {
             // 문제 로드
             async function loadQuestions() {
               try {
+                console.log('문제 로드 시작...');
                 const response = await fetch('/api/questions');
                 const data = await response.json();
                 
+                console.log('API 응답:', data);
+                
                 if (data.questions && data.questions.length > 0) {
                   questions = data.questions;
+                  console.log(questions.length + '개 문제 로드 완료');
                   
                   // 마지막 위치 확인
                   const lastPosition = await getLastPosition();
@@ -1055,10 +1071,12 @@ module.exports = (req, res) => {
                   startTimer();
                   updateStats();
                 } else {
-                  document.getElementById('question-container').innerHTML = '<p>문제를 불러올 수 없습니다.</p>';
+                  console.error('문제가 없습니다:', data);
+                  document.getElementById('question-container').innerHTML = '<p style="color: red; text-align: center; padding: 20px;">문제를 불러올 수 없습니다. 서버를 확인해주세요.</p>';
                 }
               } catch (error) {
-                document.getElementById('question-container').innerHTML = '<p>문제를 불러오는 중 오류가 발생했습니다.</p>';
+                console.error('문제 로드 오류:', error);
+                document.getElementById('question-container').innerHTML = '<p style="color: red; text-align: center; padding: 20px;">문제를 불러오는 중 오류가 발생했습니다: ' + error.message + '</p>';
               }
             }
 
@@ -1784,6 +1802,9 @@ module.exports = (req, res) => {
               <button class="btn" id="nextBtn" onclick="nextQuestion()" disabled>다음</button>
               <button class="btn" id="submitBtn" onclick="submitAnswer()" disabled>정답 확인</button>
             </div>
+            
+            <!-- 문제 컨테이너 -->
+            <div id="question-container"></div>
             
             <!-- Google AdSense 광고 영역 -->
             <div class="ad-container" style="text-align: center; margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 5px;">
