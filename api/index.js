@@ -373,6 +373,7 @@ module.exports = (req, res) => {
         <head>
           <title>CPPG CBT 시스템 - 로그인</title>
           <meta charset="utf-8">
+          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5758443984574800" crossorigin="anonymous"></script>
           <style>
             body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
             .login-container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 400px; }
@@ -629,6 +630,7 @@ module.exports = (req, res) => {
         <head>
           <title>CPPG CBT 시스템</title>
           <meta charset="utf-8">
+          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5758443984574800" crossorigin="anonymous"></script>
           <style>
             body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
             .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -875,6 +877,7 @@ module.exports = (req, res) => {
         <head>
           <title>CPPG 순차 연습</title>
           <meta charset="utf-8">
+          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5758443984574800" crossorigin="anonymous"></script>
           <style>
             body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
             .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -1183,6 +1186,7 @@ module.exports = (req, res) => {
         <head>
           <title>CPPG 랜덤 연습</title>
           <meta charset="utf-8">
+          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5758443984574800" crossorigin="anonymous"></script>
           <style>
             body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
             .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -1460,6 +1464,7 @@ module.exports = (req, res) => {
         <head>
           <title>CPPG 시험 모드</title>
           <meta charset="utf-8">
+          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5758443984574800" crossorigin="anonymous"></script>
           <style>
             body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
             .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -1689,6 +1694,7 @@ module.exports = (req, res) => {
         <head>
           <title>CPPG 세트${setNum} 연습</title>
           <meta charset="utf-8">
+          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5758443984574800" crossorigin="anonymous"></script>
           <style>
             body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
             .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -2060,6 +2066,7 @@ module.exports = (req, res) => {
         <head>
           <title>CPPG 오답 연습</title>
           <meta charset="utf-8">
+          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5758443984574800" crossorigin="anonymous"></script>
           <style>
             body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
             .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -2309,6 +2316,7 @@ module.exports = (req, res) => {
         <head>
           <title>개인정보 처리방침 - CPPG CBT 시스템</title>
           <meta charset="utf-8">
+          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5758443984574800" crossorigin="anonymous"></script>
           <style>
             body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
             .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
