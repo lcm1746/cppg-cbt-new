@@ -661,6 +661,10 @@ module.exports = (req, res) => {
               </div>
             </div>
             
+            <div style="text-align: center; margin-bottom: 20px;">
+              <a href="/privacy" style="color: #666; text-decoration: none; font-size: 14px;">개인정보 처리방침</a>
+            </div>
+            
             <div id="userStats" class="user-stats">
               <h3>📊 내 학습 통계</h3>
               <div class="stat-grid">
@@ -681,6 +685,27 @@ module.exports = (req, res) => {
                   <div class="stat-label">총 공부시간</div>
                 </div>
               </div>
+            </div>
+            
+            <!-- Google AdSense 광고 영역 -->
+            <div class="ad-container" style="text-align: center; margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 5px;">
+              <div class="ad-placeholder" style="min-height: 90px; display: flex; align-items: center; justify-content: center; color: #666; border: 2px dashed #ddd;">
+                <p>📢 Google AdSense 광고가 여기에 표시됩니다</p>
+              </div>
+              <!-- AdSense 코드를 여기에 삽입하세요 -->
+              <!-- 
+              <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_PUBLISHER_ID"
+                   crossorigin="anonymous"></script>
+              <ins class="adsbygoogle"
+                   style="display:block"
+                   data-ad-client="ca-pub-YOUR_PUBLISHER_ID"
+                   data-ad-slot="YOUR_AD_SLOT"
+                   data-ad-format="auto"
+                   data-full-width-responsive="true"></ins>
+              <script>
+                   (adsbygoogle = window.adsbygoogle || []).push({});
+              </script>
+              -->
             </div>
             
             ${!stats ? '<div class="error">⚠️ 문제 파일을 로드할 수 없습니다.</div>' : `
@@ -889,14 +914,20 @@ module.exports = (req, res) => {
               <span class="incorrect-count">오답: 0</span>
               <span class="unanswered-count">미답: 0</span>
             </div>
-            <div id="question-container">
-              <p>문제를 불러오는 중...</p>
-            </div>
+            
             <div class="controls">
               <button class="btn" id="prevBtn" onclick="prevQuestion()" disabled>이전</button>
               <button class="btn" id="nextBtn" onclick="nextQuestion()" disabled>다음</button>
               <button class="btn" id="submitBtn" onclick="submitAnswer()" disabled>정답 확인</button>
             </div>
+            
+            <!-- Google AdSense 광고 영역 -->
+            <div class="ad-container" style="text-align: center; margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+              <div class="ad-placeholder" style="min-height: 60px; display: flex; align-items: center; justify-content: center; color: #666; border: 2px dashed #ddd; font-size: 12px;">
+                <p>📢 광고 영역</p>
+              </div>
+            </div>
+            
             <div id="answer-container"></div>
             <a href="/main" class="btn">메인으로 돌아가기</a>
           </div>
@@ -1701,6 +1732,14 @@ module.exports = (req, res) => {
               <button class="btn" id="nextBtn" onclick="nextQuestion()" disabled>다음</button>
               <button class="btn" id="submitBtn" onclick="submitAnswer()" disabled>정답 확인</button>
             </div>
+            
+            <!-- Google AdSense 광고 영역 -->
+            <div class="ad-container" style="text-align: center; margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+              <div class="ad-placeholder" style="min-height: 60px; display: flex; align-items: center; justify-content: center; color: #666; border: 2px dashed #ddd; font-size: 12px;">
+                <p>📢 광고 영역</p>
+              </div>
+            </div>
+            
             <div id="answer-container"></div>
             <a href="/" class="btn">메인으로 돌아가기</a>
           </div>
@@ -2256,6 +2295,106 @@ module.exports = (req, res) => {
               document.getElementById('nextBtn').disabled = currentQuestionIndex === questions.length - 1;
             }
           </script>
+        </body>
+        </html>
+      `;
+
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(html);
+    } else if (pathname === '/privacy' && req.method === 'GET') {
+      // 개인정보 처리방침 페이지
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>개인정보 처리방침 - CPPG CBT 시스템</title>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+            .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            .btn { display: inline-block; padding: 10px 20px; margin: 10px; 
+                   background: #007bff; color: white; text-decoration: none; 
+                   border-radius: 5px; font-weight: bold; transition: background 0.3s; }
+            .btn:hover { background: #0056b3; }
+            h1 { color: #333; text-align: center; }
+            h2 { color: #007bff; margin-top: 30px; }
+            p { line-height: 1.6; color: #555; }
+            .contact { background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>개인정보 처리방침</h1>
+            <p><strong>최종 업데이트:</strong> 2024년 12월 19일</p>
+            
+            <h2>1. 수집하는 개인정보</h2>
+            <p>CPPG CBT 시스템은 다음과 같은 개인정보를 수집합니다:</p>
+            <ul>
+              <li><strong>계정 정보:</strong> 사용자명, 비밀번호 (암호화 저장)</li>
+              <li><strong>학습 데이터:</strong> 문제 풀이 기록, 정답/오답 통계, 공부시간</li>
+              <li><strong>기술적 정보:</strong> IP 주소, 브라우저 정보, 접속 시간</li>
+            </ul>
+            
+            <h2>2. 개인정보 수집 목적</h2>
+            <p>수집된 개인정보는 다음 목적으로 사용됩니다:</p>
+            <ul>
+              <li>사용자 계정 관리 및 인증</li>
+              <li>학습 진도 추적 및 통계 제공</li>
+              <li>서비스 개선 및 사용자 경험 향상</li>
+              <li>고객 지원 및 문의 응답</li>
+            </ul>
+            
+            <h2>3. 개인정보 보관 기간</h2>
+            <p>개인정보는 서비스 이용 기간 동안 보관되며, 계정 삭제 시 즉시 삭제됩니다.</p>
+            
+            <h2>4. 개인정보 공유</h2>
+            <p>당사는 다음과 같은 경우를 제외하고 개인정보를 제3자와 공유하지 않습니다:</p>
+            <ul>
+              <li>사용자의 명시적 동의가 있는 경우</li>
+              <li>법령에 의해 요구되는 경우</li>
+              <li>서비스 제공을 위해 필요한 최소한의 정보만 공유</li>
+            </ul>
+            
+            <h2>5. 쿠키 및 추적 기술</h2>
+            <p>본 서비스는 다음과 같은 기술을 사용합니다:</p>
+            <ul>
+              <li><strong>세션 쿠키:</strong> 로그인 상태 유지</li>
+              <li><strong>로컬 스토리지:</strong> 사용자 설정 및 학습 데이터 임시 저장</li>
+              <li><strong>Google Analytics:</strong> 서비스 사용 통계 분석 (선택적)</li>
+            </ul>
+            
+            <h2>6. 광고 서비스</h2>
+            <p>본 서비스는 Google AdSense를 통해 광고를 제공할 수 있습니다. Google은 쿠키를 사용하여 사용자에게 맞춤형 광고를 제공할 수 있습니다.</p>
+            
+            <h2>7. 사용자 권리</h2>
+            <p>사용자는 다음과 같은 권리를 가집니다:</p>
+            <ul>
+              <li>개인정보 조회 및 수정</li>
+              <li>개인정보 삭제 요청</li>
+              <li>개인정보 처리 중단 요청</li>
+              <li>개인정보 이전 요청</li>
+            </ul>
+            
+            <h2>8. 보안 조치</h2>
+            <p>개인정보 보호를 위해 다음과 같은 보안 조치를 취하고 있습니다:</p>
+            <ul>
+              <li>비밀번호 암호화 저장</li>
+              <li>HTTPS 통신 암호화</li>
+              <li>정기적인 보안 점검</li>
+              <li>접근 권한 관리</li>
+            </ul>
+            
+            <div class="contact">
+              <h2>9. 문의처</h2>
+              <p>개인정보 처리방침에 관한 문의사항이 있으시면 다음으로 연락주세요:</p>
+              <p><strong>이메일:</strong> privacy@cppg-cbt.com</p>
+              <p><strong>처리기간:</strong> 문의 접수 후 14일 이내</p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+              <a href="/main" class="btn">메인으로 돌아가기</a>
+            </div>
+          </div>
         </body>
         </html>
       `;
