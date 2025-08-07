@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>CPPG 실전 시험</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        .exam-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+            color: #856404;
+        }
+        .timer {
+            font-size: 28px;
+            font-weight: bold;
+            color: #d32f2f;
+            margin: 10px 0;
+        }
+        .timer.warning {
+            color: #ff9800;
+            animation: blink 1s infinite;
+        }
+        .timer.danger {
+            color: #f44336;
+            animation: blink 0.5s infinite;
+        }
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.5; }
+        }
+        .progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+        .progress-bar {
+            flex: 1;
+            height: 10px;
+            background: #ddd;
+            border-radius: 5px;
+            margin: 0 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            transition: width 0.3s ease;
+        }
+        .question-container {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .question-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .question-set {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .question-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .option {
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+        .option:hover {
+            border-color: #4CAF50;
+            background: #f0f8f0;
+        }
+        .option.selected {
+            border-color: #4CAF50;
+            background: #e8f5e8;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #45a049;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .result-container {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+        .result-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .result-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .stat-item {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        .no-questions {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+        .back-btn {
+            background: #007bff;
+            color: white;
+        }
+        .back-btn:hover {
+            background: #0056b3;
+        }
+        .submit-exam-btn {
+            background: #dc3545;
+            color: white;
+        }
+        .submit-exam-btn:hover {
+            background: #c82333;
+        }
+        .exam-warning {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #721c24;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 CPPG 실전 시험</h1>
+            <div class="exam-info">
+                ⏰ 제한시간: 120분 | 📊 총 100문제 | 🎯 실제 시험과 동일한 형식
+            </div>
+            <div class="timer" id="timer">120:00</div>
+            <div class="progress">
+                <span id="currentQuestion">1</span> / <span id="totalQuestions">100</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <span id="remainingQuestions">99문제 남음</span>
+            </div>
+        </div>
+
+        <div id="questionContainer" class="question-container">
+            <div class="question-set" id="questionSet">세트 1</div>
+            <div class="question-number" id="questionNumber">문제 1</div>
+            <div class="question-text" id="questionText"></div>
+            <div class="options" id="options"></div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn btn-warning" id="prevBtn" onclick="prevQuestion()">이전 문제</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">다음 문제</button>
+            <button class="btn btn-danger submit-exam-btn" id="submitExamBtn" onclick="submitExam()">시험 제출</button>
+            <button class="btn btn-secondary back-btn" onclick="goBack()">뒤로 가기</button>
+        </div>
+
+        <div class="result-container" id="resultContainer">
+            <div class="result-title">시험 완료!</div>
+            <div class="result-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalTime">00:00</div>
+                    <div class="stat-label">총 소요시간</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="correctCount">0</div>
+                    <div class="stat-label">정답 개수</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="accuracy">0%</div>
+                    <div class="stat-label">정답률</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="score">0점</div>
+                    <div class="stat-label">총점</div>
+                </div>
+            </div>
+            <div class="exam-warning">
+                ⚠️ 실제 시험과는 다른 결과입니다. 참고용으로만 사용하세요.
+            </div>
+        </div>
+
+        <div id="noQuestions" class="no-questions" style="display: none;">
+            <h2>문제가 없습니다</h2>
+            <p>시험 문제를 로드하지 못했습니다.</p>
+            <button class="btn btn-primary" onclick="goBack()">메인으로 돌아가기</button>
+        </div>
+    </div>
+
+    <script>
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let startTime = Date.now();
+        let examDuration = 120 * 60 * 1000; // 120분을 밀리초로
+        let answers = new Array(100).fill(-1); // 답안 저장 배열
+        let timerInterval;
+
+        // 페이지 로드 시 초기화
+        function initializeExam() {
+            loadExamQuestions();
+        }
+
+        function loadExamQuestions() {
+            fetch('/api/exam-questions')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        showNoQuestions();
+                        return;
+                    }
+                    
+                    questions = data.questions;
+                    if (questions.length === 0) {
+                        showNoQuestions();
+                        return;
+                    }
+                    
+                    // 타이머 시작
+                    startTimer();
+                    
+                    // 첫 번째 문제 표시
+                    displayQuestion();
+                })
+                .catch(error => {
+                    console.error('시험 문제 로드 오류:', error);
+                    showNoQuestions();
+                });
+        }
+
+        function showNoQuestions() {
+            document.getElementById('questionContainer').style.display = 'none';
+            document.getElementById('prevBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('submitExamBtn').style.display = 'none';
+            document.getElementById('noQuestions').style.display = 'block';
+        }
+
+        function goBack() {
+            if (confirm('시험을 중단하시겠습니까? 진행 상황이 저장되지 않습니다.')) {
+                window.location.href = '/';
+            }
+        }
+
+        // 타이머 시작
+        function startTimer() {
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        // 타이머 업데이트
+        function updateTimer() {
+            const now = Date.now();
+            const elapsed = now - startTime;
+            const remaining = examDuration - elapsed;
+            
+            if (remaining <= 0) {
+                // 시간 종료
+                clearInterval(timerInterval);
+                alert('시험 시간이 종료되었습니다!');
+                submitExam();
+                return;
+            }
+            
+            const minutes = Math.floor(remaining / 60000);
+            const seconds = Math.floor((remaining % 60000) / 1000);
+            
+            const timerElement = document.getElementById('timer');
+            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // 경고 표시
+            if (remaining <= 10 * 60 * 1000) { // 10분 남음
+                timerElement.className = 'timer danger';
+            } else if (remaining <= 30 * 60 * 1000) { // 30분 남음
+                timerElement.className = 'timer warning';
+            } else {
+                timerElement.className = 'timer';
+            }
+        }
+
+        // 문제 표시
+        function displayQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                return;
+            }
+
+            const question = questions[currentQuestionIndex];
+            
+            // 세트 정보 표시 (set이 없으면 기본값 1 사용)
+            const setNumber = question.set || 1;
+            document.getElementById('questionSet').textContent = `세트 ${setNumber}`;
+            document.getElementById('questionNumber').textContent = `문제 ${question.exam_number || question.number}`;
+            document.getElementById('questionText').textContent = question.text;
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            document.getElementById('remainingQuestions').textContent = `${questions.length - currentQuestionIndex - 1}문제 남음`;
+            
+            // 진행률 업데이트
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            
+            // 옵션 생성
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.textContent = `${index + 1}. ${option}`;
+                optionDiv.onclick = () => selectOption(index);
+                
+                // 이전에 선택한 답안이 있으면 표시
+                if (answers[currentQuestionIndex] === index) {
+                    optionDiv.classList.add('selected');
+                }
+                
+                optionsContainer.appendChild(optionDiv);
+            });
+            
+            // 버튼 상태 업데이트
+            updateButtonStates();
+        }
+
+        // 옵션 선택
+        function selectOption(index) {
+            // 기존 선택 해제
+            document.querySelectorAll('.option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // 새 선택 표시
+            document.querySelectorAll('.option')[index].classList.add('selected');
+            answers[currentQuestionIndex] = index;
+        }
+
+        // 버튼 상태 업데이트
+        function updateButtonStates() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentQuestionIndex === 0;
+            nextBtn.disabled = currentQuestionIndex === questions.length - 1;
+        }
+
+        // 이전 문제
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayQuestion();
+            }
+        }
+
+        // 다음 문제
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                displayQuestion();
+            }
+        }
+
+        // 시험 제출
+        function submitExam() {
+            const unansweredCount = answers.filter(answer => answer === -1).length;
+            
+            if (unansweredCount > 0) {
+                if (!confirm(`${unansweredCount}문제가 답안되지 않았습니다. 정말 제출하시겠습니까?`)) {
+                    return;
+                }
+            }
+            
+            clearInterval(timerInterval);
+            showResult();
+        }
+
+        // 결과 표시
+        function showResult() {
+            const totalTime = Math.floor((Date.now() - startTime) / 1000);
+            let correctCount = 0;
+            
+            // 정답 체크
+            for (let i = 0; i < questions.length; i++) {
+                if (answers[i] === questions[i].correct) {
+                    correctCount++;
+                }
+            }
+            
+            const accuracy = Math.round((correctCount / questions.length) * 100);
+            const score = Math.round((correctCount / questions.length) * 100);
+            
+            document.getElementById('totalTime').textContent = formatTime(totalTime);
+            document.getElementById('correctCount').textContent = correctCount;
+            document.getElementById('accuracy').textContent = `${accuracy}%`;
+            document.getElementById('score').textContent = `${score}점`;
+            
+            document.getElementById('questionContainer').style.display = 'none';
+            document.getElementById('prevBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('submitExamBtn').style.display = 'none';
+            document.getElementById('resultContainer').style.display = 'block';
+        }
+
+        // 시간 포맷
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        // 페이지 초기화
+        window.onload = initializeExam;
+    </script>
+</body>
+</html> 

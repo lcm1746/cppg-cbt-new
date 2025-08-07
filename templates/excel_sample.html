@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>CPPG 문제 샘플 엑셀 파일</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        .sample-section {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .back-btn {
+            background: #6c757d;
+        }
+        .back-btn:hover {
+            background: #5a6268;
+        }
+        .sample-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+        }
+        .sample-table th, .sample-table td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+            font-size: 14px;
+        }
+        .sample-table th {
+            background: #f5f5f5;
+            font-weight: bold;
+        }
+        .instructions {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .instructions h3 {
+            color: #1976d2;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CPPG 문제 샘플 엑셀 파일</h1>
+            <p>엑셀 파일 형식에 맞춰 문제를 작성할 수 있도록 샘플 파일을 제공합니다.</p>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 사용 방법</h3>
+            <ol>
+                <li>아래 "샘플 파일 다운로드" 버튼을 클릭하여 엑셀 파일을 다운로드합니다.</li>
+                <li>다운로드한 파일을 엑셀에서 열어서 문제를 작성합니다.</li>
+                <li>컬럼명은 정확히 맞춰주세요 (번호, 문제, 보기1~4, 정답, 해설).</li>
+                <li>작성 완료 후 저장하고 웹사이트에 업로드합니다.</li>
+            </ol>
+        </div>
+
+        <div class="sample-section">
+            <h3>📊 샘플 데이터 미리보기</h3>
+            <table class="sample-table">
+                <thead>
+                    <tr>
+                        <th>번호</th>
+                        <th>문제</th>
+                        <th>보기1</th>
+                        <th>보기2</th>
+                        <th>보기3</th>
+                        <th>보기4</th>
+                        <th>정답</th>
+                        <th>해설</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>개인정보 보호법에 따라 정의된 개인정보 용어는?</td>
+                        <td>개인정보</td>
+                        <td>개인정보파일</td>
+                        <td>개인정보처리자</td>
+                        <td>가명정보</td>
+                        <td>A</td>
+                        <td>개인정보는 살아 있는 개인에 관한 정보입니다.</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>개인정보처리자의 의무가 아닌 것은?</td>
+                        <td>개인정보 처리방침 공개</td>
+                        <td>개인정보 보호책임자 지정</td>
+                        <td>개인정보의 안전성 확보</td>
+                        <td>개인정보의 무제한 수집</td>
+                        <td>D</td>
+                        <td>개인정보처리자는 개인정보를 무제한으로 수집할 수 없습니다.</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>개인정보 보호법상 개인정보의 수집·이용에 대한 동의는?</td>
+                        <td>서면으로만 가능</td>
+                        <td>전자적 방법으로만 가능</td>
+                        <td>서면 또는 전자적 방법 모두 가능</td>
+                        <td>구두로만 가능</td>
+                        <td>C</td>
+                        <td>개인정보 수집·이용 동의는 서면 또는 전자적 방법으로 가능합니다.</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>개인정보의 파기 방법이 올바른 것은?</td>
+                        <td>휴지통에 버리기</td>
+                        <td>분쇄기로 분쇄</td>
+                        <td>그냥 두기</td>
+                        <td>다른 사람에게 주기</td>
+                        <td>B</td>
+                        <td>개인정보는 분쇄기로 분쇄하는 등 안전한 방법으로 파기해야 합니다.</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>개인정보 보호책임자의 역할이 아닌 것은?</td>
+                        <td>개인정보 처리방침 수립</td>
+                        <td>개인정보 처리 실태 점검</td>
+                        <td>개인정보 처리 관련 고충 처리</td>
+                        <td>개인정보 무단 판매</td>
+                        <td>D</td>
+                        <td>개인정보 보호책임자는 개인정보를 무단으로 판매할 수 없습니다.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="btn" onclick="downloadSample()">샘플 파일 다운로드</button>
+            <a href="/" class="btn back-btn">뒤로 가기</a>
+        </div>
+    </div>
+
+    <script>
+        function downloadSample() {
+            // CSV 형식으로 샘플 데이터 생성
+            const csvContent = `번호,문제,보기1,보기2,보기3,보기4,정답,해설
+1,개인정보 보호법에 따라 정의된 개인정보 용어는?,개인정보,개인정보파일,개인정보처리자,가명정보,A,개인정보는 살아 있는 개인에 관한 정보입니다.
+2,개인정보처리자의 의무가 아닌 것은?,개인정보 처리방침 공개,개인정보 보호책임자 지정,개인정보의 안전성 확보,개인정보의 무제한 수집,D,개인정보처리자는 개인정보를 무제한으로 수집할 수 없습니다.
+3,개인정보 보호법상 개인정보의 수집·이용에 대한 동의는?,서면으로만 가능,전자적 방법으로만 가능,서면 또는 전자적 방법 모두 가능,구두로만 가능,C,개인정보 수집·이용 동의는 서면 또는 전자적 방법으로 가능합니다.
+4,개인정보의 파기 방법이 올바른 것은?,휴지통에 버리기,분쇄기로 분쇄,그냥 두기,다른 사람에게 주기,B,개인정보는 분쇄기로 분쇄하는 등 안전한 방법으로 파기해야 합니다.
+5,개인정보 보호책임자의 역할이 아닌 것은?,개인정보 처리방침 수립,개인정보 처리 실태 점검,개인정보 처리 관련 고충 처리,개인정보 무단 판매,D,개인정보 보호책임자는 개인정보를 무단으로 판매할 수 없습니다.`;
+
+            // CSV 파일 다운로드
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'CPPG_문제_샘플.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert('샘플 파일이 다운로드되었습니다!\n\n사용 방법:\n1. 다운로드한 CSV 파일을 엑셀에서 열기\n2. "다른 이름으로 저장"에서 .xlsx 형식으로 저장\n3. 웹사이트에 업로드하여 사용');
+        }
+    </script>
+</body>
+</html> 

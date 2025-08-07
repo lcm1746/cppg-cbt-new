@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>CPPG 문제 텍스트 파일 업로드</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        .upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+        .upload-area:hover {
+            border-color: #4CAF50;
+            background: #f0f8f0;
+        }
+        .upload-area.dragover {
+            border-color: #4CAF50;
+            background: #e8f5e8;
+        }
+        .file-input {
+            display: none;
+        }
+        .upload-btn {
+            background: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        .upload-btn:hover {
+            background: #45a049;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: none;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+        .result-section {
+            margin-top: 30px;
+            display: none;
+        }
+        .questions-preview {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+        .question-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        .question-number {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .question-text {
+            color: #555;
+            line-height: 1.6;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        .tab.active {
+            border-bottom-color: #4CAF50;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .practice-btn {
+            background: #007bff;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        .practice-btn:hover {
+            background: #0056b3;
+        }
+        .upload-again-btn {
+            background: #6c757d;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        .upload-again-btn:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CPPG 문제 텍스트 파일 업로드</h1>
+            <p>텍스트 파일에서 CPPG 문제를 추출하여 연습할 수 있습니다.</p>
+        </div>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📄</div>
+            <h3>텍스트 파일을 업로드하세요</h3>
+            <p>TXT 파일을 드래그 앤 드롭하거나 클릭하여 선택하세요</p>
+            <input type="file" id="fileInput" class="file-input" accept=".txt">
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">파일 선택</button>
+        </div>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="error" id="errorMessage"></div>
+        <div class="success" id="successMessage"></div>
+
+        <div class="result-section" id="resultSection">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalQuestions">0</div>
+                    <div class="stat-label">추출된 문제</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="fileSize">0 KB</div>
+                    <div class="stat-label">파일 크기</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="processingTime">0초</div>
+                    <div class="stat-label">처리 시간</div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('questions')">추출된 문제</div>
+                <div class="tab" onclick="showTab('text')">원본 텍스트</div>
+            </div>
+
+            <div class="tab-content active" id="questionsTab">
+                <div class="questions-preview" id="questionsPreview"></div>
+            </div>
+
+            <div class="tab-content" id="textTab">
+                <div class="questions-preview" id="textPreview"></div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="practice-btn" onclick="startPractice()">연습 시작</button>
+                <button class="upload-again-btn" onclick="resetUpload()">다른 파일 업로드</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedQuestions = [];
+
+        // 드래그 앤 드롭 이벤트
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.name.toLowerCase().endsWith('.txt')) {
+                showError('TXT 파일만 업로드 가능합니다.');
+                return;
+            }
+
+            const startTime = Date.now();
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // 진행률 표시
+            showProgress();
+            updateProgress(10);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                updateProgress(100);
+                hideProgress();
+                
+                if (data.success) {
+                    uploadedQuestions = data.questions;
+                    showSuccess(`성공적으로 ${data.total_questions}개의 문제를 추출했습니다!`);
+                    showResult(data, file, Date.now() - startTime);
+                } else {
+                    showError(data.error);
+                    if (data.extracted_text) {
+                        showTextPreview(data.extracted_text);
+                    }
+                }
+            })
+            .catch(error => {
+                hideProgress();
+                showError('파일 업로드 중 오류가 발생했습니다: ' + error.message);
+            });
+        }
+
+        function showProgress() {
+            document.getElementById('progressBar').style.display = 'block';
+        }
+
+        function hideProgress() {
+            document.getElementById('progressBar').style.display = 'none';
+        }
+
+        function updateProgress(percent) {
+            document.getElementById('progressFill').style.width = percent + '%';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        function showResult(data, file, processingTime) {
+            // 통계 업데이트
+            document.getElementById('totalQuestions').textContent = data.total_questions;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            document.getElementById('processingTime').textContent = (processingTime / 1000).toFixed(1) + '초';
+
+            // 문제 미리보기 표시
+            showQuestionsPreview(data.questions);
+            
+            // 원본 텍스트 표시
+            showTextPreview(data.extracted_text);
+
+            // 결과 섹션 표시
+            document.getElementById('resultSection').style.display = 'block';
+        }
+
+        function showQuestionsPreview(questions) {
+            const preview = document.getElementById('questionsPreview');
+            preview.innerHTML = '';
+
+            questions.forEach(question => {
+                const div = document.createElement('div');
+                div.className = 'question-item';
+                div.innerHTML = `
+                    <div class="question-number">문제 ${question.number}</div>
+                    <div class="question-text">${question.text}</div>
+                `;
+                preview.appendChild(div);
+            });
+        }
+
+        function showTextPreview(text) {
+            const preview = document.getElementById('textPreview');
+            preview.innerHTML = `<pre style="white-space: pre-wrap; font-family: inherit;">${text}</pre>`;
+        }
+
+        function showTab(tabName) {
+            // 탭 버튼 활성화
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 탭 내용 표시
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            if (tabName === 'questions') {
+                document.getElementById('questionsTab').classList.add('active');
+            } else {
+                document.getElementById('textTab').classList.add('active');
+            }
+        }
+
+        function startPractice() {
+            if (uploadedQuestions.length === 0) {
+                showError('먼저 텍스트 파일을 업로드해주세요.');
+                return;
+            }
+
+            // localStorage에 문제 저장
+            localStorage.setItem('cppg_questions', JSON.stringify(uploadedQuestions));
+            
+            // 연습 페이지로 이동
+            window.location.href = '/practice';
+        }
+
+        function resetUpload() {
+            uploadedQuestions = [];
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('fileInput').value = '';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html> 

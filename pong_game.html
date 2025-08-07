@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>공튀기기 게임</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .game-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        canvas {
+            border: 3px solid #fff;
+            border-radius: 10px;
+            background: #000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        .info {
+            margin-top: 15px;
+            color: #fff;
+            font-size: 18px;
+        }
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .controls {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+        .restart-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+        .restart-btn:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="score">점수: <span id="score">0</span></div>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div class="info">
+            <div class="controls">조작법: 마우스 이동 또는 ← → 키</div>
+        </div>
+    </div>
+    
+    <div class="game-over" id="gameOver">
+        <h2>게임 오버!</h2>
+        <p>최종 점수: <span id="finalScore">0</span></p>
+        <button class="restart-btn" onclick="restartGame()">다시 시작</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 게임 변수
+        let score = 0;
+        let gameRunning = true;
+        
+        // 공 설정
+        const ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 10,
+            dx: 4,
+            dy: -4,
+            speed: 4
+        };
+        
+        // 패들 설정
+        const paddle = {
+            x: canvas.width / 2 - 50,
+            y: canvas.height - 30,
+            width: 100,
+            height: 10,
+            speed: 8
+        };
+        
+        // 키보드 상태
+        const keys = {
+            left: false,
+            right: false
+        };
+        
+        // 이벤트 리스너
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') keys.left = true;
+            if (e.key === 'ArrowRight') keys.right = true;
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft') keys.left = false;
+            if (e.key === 'ArrowRight') keys.right = false;
+        });
+        
+        // 마우스 이벤트
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            paddle.x = mouseX - paddle.width / 2;
+        });
+        
+        // 공 그리기
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+            ctx.closePath();
+        }
+        
+        // 패들 그리기
+        function drawPaddle() {
+            ctx.beginPath();
+            ctx.rect(paddle.x, paddle.y, paddle.width, paddle.height);
+            ctx.fillStyle = '#4CAF50';
+            ctx.fill();
+            ctx.closePath();
+        }
+        
+        // 공 이동
+        function moveBall() {
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+            
+            // 벽 충돌 체크
+            if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
+                ball.dx = -ball.dx;
+            }
+            
+            if (ball.y - ball.radius < 0) {
+                ball.dy = -ball.dy;
+            }
+            
+            // 바닥에 떨어졌는지 체크
+            if (ball.y + ball.radius > canvas.height) {
+                gameOver();
+            }
+        }
+        
+        // 패들 이동
+        function movePaddle() {
+            if (keys.left && paddle.x > 0) {
+                paddle.x -= paddle.speed;
+            }
+            if (keys.right && paddle.x + paddle.width < canvas.width) {
+                paddle.x += paddle.speed;
+            }
+            
+            // 마우스로 패들 경계 제한
+            if (paddle.x < 0) paddle.x = 0;
+            if (paddle.x + paddle.width > canvas.width) {
+                paddle.x = canvas.width - paddle.width;
+            }
+        }
+        
+        // 충돌 체크
+        function checkCollision() {
+            if (ball.y + ball.radius > paddle.y &&
+                ball.x > paddle.x &&
+                ball.x < paddle.x + paddle.width) {
+                
+                ball.dy = -ball.dy;
+                score += 10;
+                document.getElementById('score').textContent = score;
+                
+                // 공 속도 증가
+                if (score % 50 === 0) {
+                    ball.speed += 0.5;
+                    ball.dx = ball.dx > 0 ? ball.speed : -ball.speed;
+                    ball.dy = ball.dy > 0 ? ball.speed : -ball.speed;
+                }
+            }
+        }
+        
+        // 게임 오버
+        function gameOver() {
+            gameRunning = false;
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('gameOver').style.display = 'block';
+        }
+        
+        // 게임 재시작
+        function restartGame() {
+            score = 0;
+            gameRunning = true;
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.dx = 4;
+            ball.dy = -4;
+            ball.speed = 4;
+            paddle.x = canvas.width / 2 - 50;
+            document.getElementById('score').textContent = '0';
+            document.getElementById('gameOver').style.display = 'none';
+        }
+        
+        // 게임 루프
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            // 화면 클리어
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 게임 요소 업데이트
+            moveBall();
+            movePaddle();
+            checkCollision();
+            
+            // 게임 요소 그리기
+            drawBall();
+            drawPaddle();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // 게임 시작
+        gameLoop();
+    </script>
+</body>
+</html> 

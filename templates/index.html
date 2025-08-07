@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>오늘의 한국 주식 추천</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f7f7f7; }
+        h1 { color: #222; }
+        table { border-collapse: collapse; width: 60%; margin: 30px auto; background: #fff; box-shadow: 0 2px 8px #ddd; }
+        th, td { padding: 12px 18px; border-bottom: 1px solid #eee; text-align: center; }
+        th { background: #f0f0f0; }
+        tr:last-child td { border-bottom: none; }
+        .up { color: #d32f2f; font-weight: bold; }
+        .down { color: #1976d2; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1 style="text-align:center;">오늘의 한국 주식 추천 TOP 5</h1>
+    <table>
+        <tr>
+            <th>종목명</th>
+            <th>티커</th>
+            <th>현재가</th>
+            <th>등락률(%)</th>
+            <th>추천 사유</th>
+        </tr>
+        {% for stock in stocks %}
+        <tr>
+            <td>{{ stock.name }}</td>
+            <td>{{ stock.ticker }}</td>
+            <td>{{ stock.price }}</td>
+            <td class="{% if stock.change_pct >= 0 %}up{% else %}down{% endif %}">{{ stock.change_pct }}</td>
+            <td>{{ stock.reason }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <div style="text-align:center; color:#888; margin-top:30px;">실제 데이터는 yfinance 기준, 참고용입니다.</div>
+</body>
+</html> 

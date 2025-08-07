@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>CPPG 문제 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .btn {
+            padding: 15px 30px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .sample-questions {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .question-preview {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CPPG 문제 연습 시스템 테스트</h1>
+        
+        <div class="sample-questions">
+            <h2>샘플 문제 미리보기</h2>
+            <div id="questionPreview"></div>
+        </div>
+        
+        <button class="btn" onclick="loadSampleQuestions()">샘플 문제 로드</button>
+        <button class="btn" onclick="startPractice()">연습 시작</button>
+        <button class="btn" onclick="clearData()">데이터 초기화</button>
+        
+        <div id="status" style="margin-top: 20px; padding: 10px; background: #e8f5e8; border-radius: 5px; display: none;"></div>
+    </div>
+
+    <script>
+        // 샘플 문제 데이터
+        const sampleQuestions = [
+            {
+                "number": 1,
+                "text": "정보보안 관리체계(ISMS) 인증을 받기 위한 필수 요구사항 중 하나는?",
+                "options": ["보기 A", "보기 B", "보기 C", "보기 D"],
+                "correct": 0,
+                "answer": "정보보안 정책 수립 및 관리가 필수 요구사항입니다."
+            },
+            {
+                "number": 2,
+                "text": "개인정보보호법에서 정의하는 개인정보 처리자는?",
+                "options": ["보기 A", "보기 B", "보기 C", "보기 D"],
+                "correct": 1,
+                "answer": "개인정보를 처리하는 공공기관, 법인, 단체 및 개인을 의미합니다."
+            },
+            {
+                "number": 3,
+                "text": "암호화 알고리즘 중 대칭키 암호화 방식의 특징은?",
+                "options": ["보기 A", "보기 B", "보기 C", "보기 D"],
+                "correct": 2,
+                "answer": "암호화와 복호화에 동일한 키를 사용하는 방식입니다."
+            },
+            {
+                "number": 4,
+                "text": "네트워크 보안에서 방화벽의 주요 기능은?",
+                "options": ["보기 A", "보기 B", "보기 C", "보기 D"],
+                "correct": 0,
+                "answer": "허가된 트래픽만 통과시키고 불법적인 접근을 차단합니다."
+            },
+            {
+                "number": 5,
+                "text": "소프트웨어 개발 보안 가이드에서 권장하는 입력값 검증 방법은?",
+                "options": ["보기 A", "보기 B", "보기 C", "보기 D"],
+                "correct": 1,
+                "answer": "화이트리스트 방식으로 허용된 값만 입력받는 것이 안전합니다."
+            }
+        ];
+
+        // 문제 미리보기 표시
+        function showQuestionPreview() {
+            const preview = document.getElementById('questionPreview');
+            preview.innerHTML = '';
+            
+            sampleQuestions.slice(0, 3).forEach(question => {
+                const div = document.createElement('div');
+                div.className = 'question-preview';
+                div.innerHTML = `
+                    <h3>문제 ${question.number}</h3>
+                    <p><strong>내용:</strong> ${question.text}</p>
+                    <p><strong>보기:</strong> ${question.options.join(', ')}</p>
+                    <p><strong>정답:</strong> ${question.options[question.correct]}</p>
+                `;
+                preview.appendChild(div);
+            });
+        }
+
+        // 샘플 문제 로드
+        function loadSampleQuestions() {
+            localStorage.setItem('cppg_questions', JSON.stringify(sampleQuestions));
+            showStatus('샘플 문제가 localStorage에 저장되었습니다!', 'success');
+        }
+
+        // 연습 시작
+        function startPractice() {
+            const questions = localStorage.getItem('cppg_questions');
+            if (!questions) {
+                showStatus('먼저 샘플 문제를 로드해주세요!', 'error');
+                return;
+            }
+            
+            // 연습 페이지로 이동
+            window.location.href = '/practice';
+        }
+
+        // 데이터 초기화
+        function clearData() {
+            localStorage.removeItem('cppg_questions');
+            showStatus('localStorage 데이터가 초기화되었습니다.', 'info');
+        }
+
+        // 상태 메시지 표시
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.style.display = 'block';
+            
+            // 타입에 따른 색상 설정
+            status.style.background = type === 'success' ? '#e8f5e8' : 
+                                    type === 'error' ? '#f8d7da' : '#d1ecf1';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 3000);
+        }
+
+        // 페이지 로드 시 미리보기 표시
+        window.onload = function() {
+            showQuestionPreview();
+            
+            // localStorage 상태 확인
+            const questions = localStorage.getItem('cppg_questions');
+            if (questions) {
+                try {
+                    const parsed = JSON.parse(questions);
+                    showStatus(`${parsed.length}개의 문제가 이미 로드되어 있습니다.`, 'info');
+                } catch (e) {
+                    showStatus('저장된 문제 데이터에 오류가 있습니다.', 'error');
+                }
+            }
+        };
+    </script>
+</body>
+</html> 

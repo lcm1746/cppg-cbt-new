@@ -1,0 +1,18 @@
+{
+  "users": {
+    "admin": {
+      "password": "1234",
+      "createdAt": "2025-08-06T13:27:58.615545",
+      "stats": {
+        "totalQuestions": 0,
+        "correctAnswers": 0,
+        "incorrectAnswers": 0,
+        "totalStudyTime": 0,
+        "lastPracticeDate": null,
+        "practiceHistory": [],
+        "wrongQuestions": [],
+        "lastSequentialPosition": 0
+      }
+    }
+  }
+}
