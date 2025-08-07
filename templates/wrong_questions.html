@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오답 문제 연습 - CPPG CBT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .stats div {
+            text-align: center;
+        }
+
+        .stats .number {
+            font-size: 20px;
+            font-weight: bold;
+            display: block;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .question-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+        }
+
+        .question-text {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .options {
+            display: grid;
+            gap: 12px;
+        }
+
+        .option {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .option.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .option.correct {
+            border-color: #28a745;
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .option.incorrect {
+            border-color: #dc3545;
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .explanation {
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 4px solid #2196f3;
+            display: none;
+        }
+
+        .explanation.show {
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .progress {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 8px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .no-questions {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+        }
+
+        .no-questions h3 {
+            margin-bottom: 15px;
+            color: #495057;
+        }
+
+        .back-btn {
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .question-text {
+                font-size: 16px;
+            }
+
+            .option {
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            .controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 오답 문제 연습</h1>
+            <p>틀렸던 문제들을 다시 풀어보세요</p>
+            <div class="stats">
+                <div>
+                    <span class="number" id="currentQuestion">0</span>
+                    <span>현재 문제</span>
+                </div>
+                <div>
+                    <span class="number" id="totalQuestions">0</span>
+                    <span>총 문제</span>
+                </div>
+                <div>
+                    <span class="number" id="correctCount">0</span>
+                    <span>정답</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div id="noQuestions" class="no-questions" style="display: none;">
+                <h3>🎉 축하합니다!</h3>
+                <p>아직 틀린 문제가 없습니다.</p>
+                <p>문제를 풀어서 오답을 만들어보세요!</p>
+                <a href="/main" class="back-btn">메인으로 돌아가기</a>
+            </div>
+
+            <div id="questionSection" style="display: none;">
+                <div class="progress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+
+                <div class="question-container">
+                    <div class="question-text" id="questionText"></div>
+                    <div class="options" id="options"></div>
+                    <div class="explanation" id="explanation"></div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()">이전 문제</button>
+                    <button class="btn" id="submitBtn" onclick="submitAnswer()" style="display: none;">정답 확인</button>
+                    <button class="btn" id="nextBtn" onclick="nextQuestion()" style="display: none;">다음 문제</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let selectedAnswer = null;
+        let answered = false;
+        let correctCount = 0;
+
+        // 페이지 로드 시 오답 문제 가져오기
+        window.onload = function() {
+            loadWrongQuestions();
+        };
+
+        function loadWrongQuestions() {
+            fetch('/api/wrong-questions')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.questions && data.questions.length > 0) {
+                        questions = data.questions;
+                        document.getElementById('totalQuestions').textContent = questions.length;
+                        document.getElementById('questionSection').style.display = 'block';
+                        showQuestion();
+                    } else {
+                        document.getElementById('noQuestions').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('오답 문제 로드 오류:', error);
+                    document.getElementById('noQuestions').style.display = 'block';
+                });
+        }
+
+        function showQuestion() {
+            if (questions.length === 0) return;
+
+            const question = questions[currentQuestionIndex];
+            document.getElementById('questionText').textContent = question.text;
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            document.getElementById('progressBar').style.width = ((currentQuestionIndex + 1) / questions.length * 100) + '%';
+
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.textContent = option;
+                optionDiv.onclick = () => selectOption(index);
+                optionsContainer.appendChild(optionDiv);
+            });
+
+            // 버튼 상태 초기화
+            document.getElementById('submitBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('explanation').classList.remove('show');
+            selectedAnswer = null;
+            answered = false;
+        }
+
+        function selectOption(index) {
+            if (answered) return;
+
+            // 기존 선택 해제
+            document.querySelectorAll('.option').forEach(option => {
+                option.classList.remove('selected');
+            });
+
+            // 새 선택
+            document.querySelectorAll('.option')[index].classList.add('selected');
+            selectedAnswer = index;
+            document.getElementById('submitBtn').style.display = 'inline-block';
+        }
+
+        function submitAnswer() {
+            if (selectedAnswer === null) return;
+
+            const question = questions[currentQuestionIndex];
+            const isCorrect = selectedAnswer === question.correct;
+            
+            // 서버에 답안 제출
+            fetch('/api/submit-answer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    question: question,
+                    answer: selectedAnswer,
+                    studyTime: 0
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (isCorrect) {
+                        correctCount++;
+                        document.getElementById('correctCount').textContent = correctCount;
+                    }
+
+                    // 정답/오답 표시
+                    document.querySelectorAll('.option').forEach((option, index) => {
+                        option.classList.remove('selected');
+                        if (index === data.correctAnswer) {
+                            option.classList.add('correct');
+                        } else if (index === selectedAnswer && !data.correct) {
+                            option.classList.add('incorrect');
+                        }
+                    });
+
+                    // 해설 표시
+                    const explanation = document.getElementById('explanation');
+                    explanation.textContent = data.explanation;
+                    explanation.classList.add('show');
+
+                    // 버튼 변경
+                    document.getElementById('submitBtn').style.display = 'none';
+                    document.getElementById('nextBtn').style.display = 'inline-block';
+
+                    answered = true;
+                } else {
+                    alert('답안 제출 중 오류가 발생했습니다.');
+                }
+            })
+            .catch(error => {
+                console.error('답안 제출 오류:', error);
+                alert('답안 제출 중 오류가 발생했습니다.');
+            });
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                showQuestion();
+            } else {
+                // 모든 문제 완료
+                alert(`모든 오답 문제를 완료했습니다!\n정답률: ${Math.round(correctCount / questions.length * 100)}%`);
+                window.location.href = '/main';
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                showQuestion();
+            }
+        }
+    </script>
+</body>
+</html> 
