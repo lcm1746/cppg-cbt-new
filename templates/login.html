@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - CPPG CBT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .form-container {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .toggle-form {
+            text-align: center;
+            color: #667eea;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 15px;
+        }
+
+        .toggle-form:hover {
+            text-decoration: underline;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .form {
+            display: none;
+        }
+
+        .form.active {
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 CPPG CBT</h1>
+            <p>개인정보보호 전문가 자격증 연습 시스템</p>
+        </div>
+
+        <div class="form-container">
+            <div id="message"></div>
+
+            <!-- 로그인 폼 -->
+            <form id="loginForm" class="form active">
+                <div class="form-group">
+                    <label for="loginUsername">사용자명</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">비밀번호</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn">로그인</button>
+                <div class="toggle-form" onclick="toggleForm('register')">
+                    계정이 없으신가요? 회원가입하기
+                </div>
+            </form>
+
+            <!-- 회원가입 폼 -->
+            <form id="registerForm" class="form">
+                <div class="form-group">
+                    <label for="registerUsername">사용자명</label>
+                    <input type="text" id="registerUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">비밀번호</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">비밀번호 확인</label>
+                    <input type="password" id="confirmPassword" required>
+                </div>
+                <button type="submit" class="btn">회원가입</button>
+                <div class="toggle-form" onclick="toggleForm('login')">
+                    이미 계정이 있으신가요? 로그인하기
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function toggleForm(type) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            
+            if (type === 'register') {
+                loginForm.classList.remove('active');
+                registerForm.classList.add('active');
+            } else {
+                registerForm.classList.remove('active');
+                loginForm.classList.add('active');
+            }
+            
+            document.getElementById('message').style.display = 'none';
+        }
+
+        // 로그인 폼 제출
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!username || !password) {
+                showMessage('사용자명과 비밀번호를 모두 입력해주세요.', 'error');
+                return;
+            }
+            
+            fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('로그인 성공!', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/main';
+                    }, 1000);
+                } else {
+                    showMessage(data.message || '로그인에 실패했습니다.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('로그인 오류:', error);
+                showMessage('로그인 중 오류가 발생했습니다.', 'error');
+            });
+        });
+
+        // 회원가입 폼 제출
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (!username || !password || !confirmPassword) {
+                showMessage('모든 필드를 입력해주세요.', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showMessage('비밀번호가 일치하지 않습니다.', 'error');
+                return;
+            }
+            
+            if (username.length < 3) {
+                showMessage('사용자명은 3자 이상이어야 합니다.', 'error');
+                return;
+            }
+            
+            if (password.length < 4) {
+                showMessage('비밀번호는 4자 이상이어야 합니다.', 'error');
+                return;
+            }
+            
+            fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('회원가입 성공! 로그인해주세요.', 'success');
+                    toggleForm('login');
+                    document.getElementById('loginUsername').value = username;
+                } else {
+                    showMessage(data.message || '회원가입에 실패했습니다.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('회원가입 오류:', error);
+                showMessage('회원가입 중 오류가 발생했습니다.', 'error');
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 페이지 - CPPG CBT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .header .user-info {
+            text-align: right;
+        }
+
+        .back-btn {
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .users-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .users-table th,
+        .users-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .users-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .users-table tr:hover {
+            background: #f8f9ff;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .delete-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .role-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .role-admin {
+            background: #dc3545;
+            color: white;
+        }
+
+        .role-user {
+            background: #28a745;
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .stats-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .users-table {
+                font-size: 14px;
+            }
+
+            .users-table th,
+            .users-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👨‍💼 관리자 페이지</h1>
+            <div class="user-info">
+                <div>{{ username }}</div>
+                <a href="/main" class="back-btn">메인으로 돌아가기</a>
+            </div>
+        </div>
+
+        <div class="content">
+            <div id="loading" class="loading">
+                사용자 데이터를 불러오는 중...
+            </div>
+
+            <div id="error" class="error" style="display: none;"></div>
+
+            <div id="content" style="display: none;">
+                <div class="stats-summary">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalUsers">0</div>
+                        <div class="stat-label">총 사용자 수</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalQuestions">0</div>
+                        <div class="stat-label">총 문제 풀이 수</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="avgAccuracy">0%</div>
+                        <div class="stat-label">평균 정답률</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalStudyTime">0시간</div>
+                        <div class="stat-label">총 학습 시간</div>
+                    </div>
+                </div>
+
+                <div class="users-section">
+                    <h2 class="section-title">👥 사용자 관리</h2>
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>사용자명</th>
+                                <th>역할</th>
+                                <th>가입일</th>
+                                <th>총 문제</th>
+                                <th>정답률</th>
+                                <th>학습시간</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 페이지 로드 시 사용자 데이터 가져오기
+        window.onload = function() {
+            loadUsers();
+        };
+
+        function loadUsers() {
+            fetch('/api/users')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.users) {
+                        displayUsers(data.users);
+                        calculateStats(data.users);
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('content').style.display = 'block';
+                    } else {
+                        showError('사용자 데이터를 불러올 수 없습니다.');
+                    }
+                })
+                .catch(error => {
+                    console.error('사용자 데이터 로드 오류:', error);
+                    showError('사용자 데이터를 불러오는 중 오류가 발생했습니다.');
+                });
+        }
+
+        function displayUsers(users) {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                const stats = user.stats || {};
+                
+                const totalQuestions = stats.totalQuestions || 0;
+                const correctAnswers = stats.correctAnswers || 0;
+                const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+                const studyTime = Math.round((stats.totalStudyTime || 0) / 3600 * 10) / 10; // 시간 단위로 변환
+
+                row.innerHTML = `
+                    <td>${user.username}</td>
+                    <td><span class="role-badge role-${user.role || 'user'}">${user.role || 'user'}</span></td>
+                    <td>${formatDate(user.createdAt)}</td>
+                    <td>${totalQuestions}</td>
+                    <td>${accuracy}%</td>
+                    <td>${studyTime}시간</td>
+                    <td>
+                        ${user.username !== 'admin' ? 
+                            `<button class="delete-btn" onclick="deleteUser('${user.username}')">삭제</button>` : 
+                            '<button class="delete-btn" disabled>삭제 불가</button>'
+                        }
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function calculateStats(users) {
+            const totalUsers = users.length;
+            let totalQuestions = 0;
+            let totalCorrect = 0;
+            let totalStudyTime = 0;
+
+            users.forEach(user => {
+                const stats = user.stats || {};
+                totalQuestions += stats.totalQuestions || 0;
+                totalCorrect += stats.correctAnswers || 0;
+                totalStudyTime += stats.totalStudyTime || 0;
+            });
+
+            const avgAccuracy = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+            const avgStudyTime = Math.round((totalStudyTime / 3600) * 10) / 10;
+
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('totalQuestions').textContent = totalQuestions;
+            document.getElementById('avgAccuracy').textContent = avgAccuracy + '%';
+            document.getElementById('totalStudyTime').textContent = avgStudyTime + '시간';
+        }
+
+        function deleteUser(username) {
+            if (!confirm(`정말로 사용자 '${username}'을(를) 삭제하시겠습니까?`)) {
+                return;
+            }
+
+            fetch(`/api/users/${username}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('사용자가 삭제되었습니다.');
+                    loadUsers(); // 목록 새로고침
+                } else {
+                    alert(data.error || '사용자 삭제에 실패했습니다.');
+                }
+            })
+            .catch(error => {
+                console.error('사용자 삭제 오류:', error);
+                alert('사용자 삭제 중 오류가 발생했습니다.');
+            });
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ko-KR');
+        }
+
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+        }
+    </script>
+</body>
+</html> 
